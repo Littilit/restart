@@ -5,6 +5,8 @@ import StatusBadge from '../../../StatusBadge';
 import StatusEditor from './StatusEditor';
 import TagsEditor from './TagsEditor';
 import NotizenEditor from './NotizenEditor';
+import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
+import type { Kontraindikation } from '@/features/anamnese/types';
 
 type Tab = 'uebersicht' | 'empfehlungen' | 'notizen';
 
@@ -159,10 +161,32 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                 {latestAnamnese.mainFocus2 && (
                   <Row label="2. Fokus" value={latestAnamnese.mainFocus2} />
                 )}
-                <Row
-                  label="Kontraindikationen"
-                  value={latestAnamnese.keineKontraindikationen ? 'Keine' : 'Vorhanden (s. Akte)'}
-                />
+                <div className="flex gap-2 text-sm">
+                  <dt className="w-44 shrink-0 text-gray-500">Kontraindikationen</dt>
+                  <dd>
+                    {latestAnamnese.keineKontraindikationen ? (
+                      <span className="text-gray-800">Keine</span>
+                    ) : (() => {
+                      const aktive = Object.entries(
+                        (latestAnamnese.kontraindikationen ?? {}) as Record<string, boolean>
+                      )
+                        .filter(([, v]) => v)
+                        .map(([k]) => KONTRAINDIKATION_LABEL[k as Kontraindikation] ?? k);
+                      return aktive.length > 0 ? (
+                        <ul className="space-y-0.5">
+                          {aktive.map((label) => (
+                            <li key={label} className="flex gap-1.5 text-red-700">
+                              <span className="shrink-0 mt-0.5">⚠</span>
+                              <span>{label}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="text-gray-400 italic">Keine Angabe</span>
+                      );
+                    })()}
+                  </dd>
+                </div>
                 <Row label="Marketing-Einwilligung" value={latestAnamnese.consentMarketing ? 'Ja' : 'Nein'} />
               </dl>
             </div>

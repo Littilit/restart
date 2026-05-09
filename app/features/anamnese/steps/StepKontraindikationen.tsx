@@ -4,16 +4,17 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { Button } from '@/components/ui/Button';
 import { useAnamnese } from '../store';
 import type { Kontraindikation } from '../types';
+import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
 
-const KONTRAINDIKATIONEN: { id: Kontraindikation; label: string; hint?: string }[] = [
-  { id: 'herzschrittmacher', label: 'Herzschrittmacher, Defibrillator oder implantierte elektronische Geräte' },
-  { id: 'metallimplantate', label: 'Metallimplantate, Prothesen oder Schrauben im Körper' },
-  { id: 'herzerkrankungen', label: 'Bekannte Herzerkrankungen oder Herzrhythmusstörungen' },
-  { id: 'blutverduenner', label: 'Blutverdünner oder gerinnungshemmende Medikamente' },
-  { id: 'epilepsie', label: 'Epilepsie oder Anfallserkrankungen' },
-  { id: 'krebs', label: 'Aktive Krebserkrankung oder laufende Chemotherapie' },
-  { id: 'operation', label: 'Operation in den letzten 3 Monaten' },
-  { id: 'schwangerschaft', label: 'Schwangerschaft' },
+const KONTRAINDIKATIONEN: { id: Kontraindikation }[] = [
+  { id: 'herzschrittmacher' },
+  { id: 'metallimplantate' },
+  { id: 'herzerkrankungen' },
+  { id: 'blutverduenner' },
+  { id: 'epilepsie' },
+  { id: 'krebs' },
+  { id: 'operation' },
+  { id: 'schwangerschaft' },
 ];
 
 export function StepKontraindikationen() {
@@ -35,8 +36,7 @@ export function StepKontraindikationen() {
             <Checkbox
               checked={!!data.kontraindikationen[k.id]}
               onChange={(e) => setKontraindikation(k.id, e.target.checked)}
-              label={k.label}
-              hint={k.hint}
+              label={KONTRAINDIKATION_LABEL[k.id]}
               disabled={data.keineKontraindikationen}
             />
           </div>
