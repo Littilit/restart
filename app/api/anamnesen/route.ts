@@ -47,6 +47,29 @@ export async function POST(request: Request) {
   }
 
   try {
+    const customer = await prisma.customer.upsert({
+      where: { email: d.email },
+      update: {
+        vorname: d.vorname,
+        nachname: d.nachname,
+        telefon: d.telefon,
+        geburtsdatum: d.geburtsdatum,
+        adresse: d.adresse,
+        consentMarketing: d.consentMarketing,
+        herkunft: d.herkunft || undefined,
+      },
+      create: {
+        vorname: d.vorname,
+        nachname: d.nachname,
+        email: d.email,
+        telefon: d.telefon,
+        geburtsdatum: d.geburtsdatum,
+        adresse: d.adresse,
+        consentMarketing: d.consentMarketing,
+        herkunft: d.herkunft,
+      },
+    });
+
     const anamnese = await prisma.anamnese.create({
       data: {
         version: 2,
@@ -70,6 +93,7 @@ export async function POST(request: Request) {
         signatureDataUrl: d.signatureDataUrl ?? null,
         herkunft: d.herkunft,
         userAgent: d.userAgent,
+        customerId: customer.id,
       },
     });
 

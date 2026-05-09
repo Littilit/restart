@@ -9,16 +9,16 @@ datasource db {
 }
 
 model Anamnese {
-  id                      String   @id @default(cuid())
-  version                 Int      @default(2)
+  id                      String    @id @default(cuid())
+  version                 Int       @default(2)
   gewaehlteAnwendung      String?
   mainFocus               String?
   mainFocus2              String?
-  chamber2                Json     @default("{}")
-  chamber2b               Json     @default("{}")
-  recommendations         Json     @default("[]")
-  kontraindikationen      Json     @default("{}")
-  keineKontraindikationen Boolean  @default(false)
+  chamber2                Json      @default("{}")
+  chamber2b               Json      @default("{}")
+  recommendations         Json      @default("[]")
+  kontraindikationen      Json      @default("{}")
+  keineKontraindikationen Boolean   @default(false)
   vorname                 String
   nachname                String
   email                   String
@@ -27,11 +27,67 @@ model Anamnese {
   adresse                 String
   consentDsgvo            Boolean
   consentGesundheitsdaten Boolean
-  consentMarketing        Boolean  @default(false)
-  signatureDataUrl        String?  @db.Text
-  herkunft                String   @default("")
-  userAgent               String   @default("")
-  createdAt               DateTime @default(now())
+  consentMarketing        Boolean   @default(false)
+  signatureDataUrl        String?   @db.Text
+  herkunft                String    @default("")
+  userAgent               String    @default("")
+  createdAt               DateTime  @default(now())
+  customerId              String?
+  customer                Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+}
+
+model Customer {
+  id               String         @id @default(cuid())
+  vorname          String
+  nachname         String
+  email            String         @unique
+  telefon          String
+  geburtsdatum     String
+  adresse          String
+  status           CustomerStatus @default(neukunde)
+  tags             String[]       @default([])
+  consentMarketing Boolean        @default(false)
+  herkunft         String         @default("")
+  anamnesen        Anamnese[]
+  empfehlungen     Empfehlung[]
+  notizen          Note[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+enum CustomerStatus {
+  neukunde
+  startangebot
+  mitglied
+  karten_kunde
+  aggregator
+  angebot_nachfassen
+}
+
+model Empfehlung {
+  id            String        @id @default(cuid())
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  typ           EmpfehlungTyp
+  anwendungen   Json
+  zusatzhinweis String?       @db.Text
+  preisSnapshot Json          @default("{}")
+  shareToken    String        @unique @default(cuid())
+  pdfErzeugtAm  DateTime?
+  createdAt     DateTime      @default(now())
+}
+
+enum EmpfehlungTyp {
+  neukunde
+  folge
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  body       String   @db.Text
+  createdAt  DateTime @default(now())
 }
 
 model User {
