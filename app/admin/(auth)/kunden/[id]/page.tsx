@@ -192,12 +192,14 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                         </div>
                       </div>
                     </div>
-                    <Link
-                      href={`/empfehlung/${e.shareToken}`}
+                    <a
+                      href={`/p/${e.shareToken}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-sm text-cp-tuerkis hover:underline"
                     >
-                      PDF / Link
-                    </Link>
+                      PDF öffnen
+                    </a>
                   </div>
                 );
               })}
