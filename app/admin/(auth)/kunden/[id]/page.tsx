@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import StatusBadge from '../../../StatusBadge';
 import StatusEditor from './StatusEditor';
 import TagsEditor from './TagsEditor';
+import NotizenEditor from './NotizenEditor';
 
 type Tab = 'uebersicht' | 'empfehlungen' | 'notizen';
 
@@ -250,9 +251,7 @@ export default async function KundeDetail({ params, searchParams }: Props) {
       )}
 
       {activeTab === 'notizen' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-400">
-          Notizen folgen in Phase 7.
-        </div>
+        <NotizenEditor customerId={customer.id} initial={customer.notizen} />
       )}
     </div>
   );

@@ -3,7 +3,10 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { computeEmpfehlungen } from '@/features/anamnese/empfehlung';
 import type { MainFocus } from '@/features/anamnese/types';
+import { ANWENDUNGEN, type AnwendungSlug } from '@/data/anwendungen';
 import EmpfehlungEditor from './EmpfehlungEditor';
+
+const VALID_SLUGS = new Set<string>(ANWENDUNGEN.map((a) => a.slug));
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -19,23 +22,51 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
     where: { id },
     include: {
       anamnesen: { orderBy: { createdAt: 'desc' }, take: 1 },
+      empfehlungen: { orderBy: { createdAt: 'desc' }, take: 1 },
     },
   });
 
   if (!customer) notFound();
 
-  const anamnese = customer.anamnesen[0];
-  const chamber2 = (anamnese?.chamber2 ?? {}) as Record<string, string>;
-  const chamber2b = (anamnese?.chamber2b ?? {}) as Record<string, string>;
-  const mainFocus = (anamnese?.mainFocus ?? null) as MainFocus | null;
-  const mainFocus2 = (anamnese?.mainFocus2 ?? null) as MainFocus | null;
+  let initial: { slug: AnwendungSlug; haeufigkeitText: string; begruendung: string }[];
 
-  const vorschlag = computeEmpfehlungen(mainFocus, chamber2, mainFocus2, chamber2b);
-  const initial = vorschlag.map((entry) => ({
-    slug: entry.slug,
-    haeufigkeitText: entry.sessions,
-    begruendung: entry.explanation,
-  }));
+  if (typ === 'folge' && customer.empfehlungen.length > 0) {
+    const letzteEmpfehlung = customer.empfehlungen[0];
+    const raw = Array.isArray(letzteEmpfehlung.anwendungen)
+      ? letzteEmpfehlung.anwendungen
+      : [];
+    initial = raw
+      .filter((a) => {
+        if (typeof a !== 'object' || a === null) return false;
+        const o = a as Record<string, unknown>;
+        return (
+          VALID_SLUGS.has(o.slug as string) &&
+          typeof o.haeufigkeitText === 'string' &&
+          typeof o.begruendung === 'string'
+        );
+      })
+      .map((a) => {
+        const o = a as Record<string, unknown>;
+        return {
+          slug: o.slug as AnwendungSlug,
+          haeufigkeitText: o.haeufigkeitText as string,
+          begruendung: o.begruendung as string,
+        };
+      });
+  } else {
+    const anamnese = customer.anamnesen[0];
+    const chamber2 = (anamnese?.chamber2 ?? {}) as Record<string, string>;
+    const chamber2b = (anamnese?.chamber2b ?? {}) as Record<string, string>;
+    const mainFocus = (anamnese?.mainFocus ?? null) as MainFocus | null;
+    const mainFocus2 = (anamnese?.mainFocus2 ?? null) as MainFocus | null;
+
+    const vorschlag = computeEmpfehlungen(mainFocus, chamber2, mainFocus2, chamber2b);
+    initial = vorschlag.map((entry) => ({
+      slug: entry.slug,
+      haeufigkeitText: entry.sessions,
+      begruendung: entry.explanation,
+    }));
+  }
 
   return (
     <div>
