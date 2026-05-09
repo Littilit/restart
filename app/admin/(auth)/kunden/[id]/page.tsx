@@ -7,6 +7,21 @@ import TagsEditor from './TagsEditor';
 
 type Tab = 'uebersicht' | 'empfehlungen' | 'notizen';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://restart.recovery-augsburg.dev';
+
+function normalizePhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.startsWith('0049')) return digits.slice(2);
+  if (digits.startsWith('49')) return digits;
+  if (digits.startsWith('0')) return '49' + digits.slice(1);
+  return digits;
+}
+
+function waUrl(phone: string, text?: string): string {
+  const base = `https://api.whatsapp.com/send?phone=${normalizePhone(phone)}`;
+  return text ? `${base}&text=${encodeURIComponent(text)}` : base;
+}
+
 interface Props {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ tab?: string }>;
@@ -82,7 +97,20 @@ export default async function KundeDetail({ params, searchParams }: Props) {
             <dl className="space-y-2 text-sm">
               <Row label="Name" value={`${customer.vorname} ${customer.nachname}`} />
               <Row label="E-Mail" value={customer.email} />
-              <Row label="Telefon" value={customer.telefon} />
+              <div className="flex gap-2 text-sm">
+                <dt className="w-44 shrink-0 text-gray-500">Telefon</dt>
+                <dd className="flex items-center gap-2">
+                  <span className="text-gray-800">{customer.telefon}</span>
+                  <a
+                    href={waUrl(customer.telefon)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs px-1.5 py-0.5 rounded bg-[#25d366] text-white hover:opacity-90 transition-opacity"
+                  >
+                    WhatsApp
+                  </a>
+                </dd>
+              </div>
               <Row label="Geburtsdatum" value={customer.geburtsdatum} />
               <Row label="Adresse" value={customer.adresse} />
               {customer.herkunft && <Row label="Herkunft" value={customer.herkunft} />}
@@ -192,14 +220,27 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                         </div>
                       </div>
                     </div>
-                    <a
-                      href={`/p/${e.shareToken}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-cp-tuerkis hover:underline"
-                    >
-                      PDF öffnen
-                    </a>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <a
+                        href={`/p/${e.shareToken}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-cp-tuerkis hover:underline"
+                      >
+                        PDF öffnen
+                      </a>
+                      <a
+                        href={waUrl(
+                          customer.telefon,
+                          `Ihr Angebot von Cryopoint Augsburg: ${SITE_URL}/p/${e.shareToken}`
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs px-1.5 py-0.5 rounded bg-[#25d366] text-white hover:opacity-90 transition-opacity"
+                      >
+                        WhatsApp
+                      </a>
+                    </div>
                   </div>
                 );
               })}
