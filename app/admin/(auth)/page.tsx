@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import type { CustomerStatus } from '@prisma/client';
-import StatusBadge, { STATUS_CONFIG } from './StatusBadge';
+import StatusBadge, { STATUS_CONFIG } from '../StatusBadge';
 
 const STATUS_ORDER: CustomerStatus[] = [
   'neukunde',
