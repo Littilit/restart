@@ -142,8 +142,67 @@ export default async function KundeDetail({ params, searchParams }: Props) {
       )}
 
       {activeTab === 'empfehlungen' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-400">
-          Empfehlungen folgen in Phase 4.
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/admin/kunden/${id}/empfehlung/neu?typ=neukunde`}
+              className="px-4 py-2 text-sm font-medium bg-cp-tuerkis text-white rounded-lg hover:opacity-90 transition-opacity"
+            >
+              + Neukunden-Angebot
+            </Link>
+            <Link
+              href={`/admin/kunden/${id}/empfehlung/neu?typ=folge`}
+              className="px-4 py-2 text-sm font-medium bg-cp-grauweis text-cp-blau rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              + Folgeangebot
+            </Link>
+          </div>
+
+          {customer.empfehlungen.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-400">
+              Noch keine Empfehlungen vorhanden.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {customer.empfehlungen.map((e) => {
+                const anwendungen = Array.isArray(e.anwendungen) ? e.anwendungen : [];
+                return (
+                  <div
+                    key={e.id}
+                    className="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          e.typ === 'neukunde'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-emerald-100 text-emerald-800'
+                        }`}
+                      >
+                        {e.typ === 'neukunde' ? 'Neukunden-Angebot' : 'Folgeangebot'}
+                      </span>
+                      <div className="text-sm">
+                        <div className="text-gray-800">
+                          {anwendungen.length} Anwendung{anwendungen.length === 1 ? '' : 'en'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(e.createdAt).toLocaleDateString('de-DE', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/empfehlung/${e.shareToken}`}
+                      className="text-sm text-cp-tuerkis hover:underline"
+                    >
+                      PDF / Link
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
