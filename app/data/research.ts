@@ -11,7 +11,7 @@ export const RESEARCH: Partial<Record<AnwendungSlug, ResearchEntry>> = {
   eisbox: {
     shortClaim: 'Extremkälte aktiviert Hormesis: Noradrenalin, Endorphine, Anti-Inflammation – in 2 Minuten.',
     mechanism:
-      'Kälte von −85 bis −110 °C senkt die Hauttemperatur auf 5–12 °C und löst eine Sympathikus-Aktivierung aus. ' +
+      'Kälte von −110 °C senkt die Hauttemperatur auf 5–12 °C und löst eine Sympathikus-Aktivierung aus. ' +
       'Noradrenalin steigt 2–4-fach, pro-inflammatorische Zytokine (IL-6, TNF-α) sinken, anti-inflammatorisches IL-10 steigt. ' +
       'Die reaktive Vasodilatation danach verbessert Durchblutung und HRV messbar.',
     topEffects: [

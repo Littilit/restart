@@ -4,8 +4,40 @@ import { CheckCircle2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { getAnwendung } from '@/data/anwendungen';
+import type { AnwendungSlug } from '@/data/anwendungen';
 import { RESEARCH } from '@/data/research';
 import { useAnamnese } from '../store';
+
+interface NaechsterSchrittInfo {
+  text: string;
+  softHint?: string;
+}
+
+const NAECHSTER_SCHRITT: Record<AnwendungSlug, NaechsterSchrittInfo> = {
+  eisbox: {
+    text: 'Kümmer dich um nichts – wir stellen dir alles. Du kannst eigene Handschuhe, eine Mütze oder eine Atemmaske mitbringen, musst es aber nicht.',
+  },
+  redlight: {
+    text: 'Keine Vorbereitung nötig – komm einfach so, wie du bist.',
+  },
+  infrarotsauna: {
+    text: 'Du bekommst ein Handtuch von uns. Möchtest du ein zweites? Bring gerne deins mit.',
+  },
+  'boa-lymphmassage': {
+    text: 'Trag bitte eine lange, bequeme Hose – z. B. eine Leggings oder eine Jogginghose. Das Oberteil ist egal.',
+  },
+  armstrong: {
+    text: 'Zur Anwendung brauchst du nichts Besonderes mitbringen.',
+    softHint: 'Tipp: Wer viel trinkt, ausgewogen isst und sich bewegt, holt langfristig mehr raus. Kein Muss – aber es macht den Unterschied.',
+  },
+  beckenbodenstuhl: {
+    text: 'Keine Vorbereitung nötig – du kannst in normaler Alltagskleidung kommen, auch in Jeans.',
+  },
+  cryoshaper: {
+    text: 'Zur Anwendung brauchst du nichts Besonderes beachten.',
+    softHint: 'Tipp: Trink viel Wasser – das unterstützt deinen Körper beim natürlichen Abbau der Fettzellen. Ausgewogene Ernährung und Bewegung im Alltag helfen zusätzlich. Kein Muss, aber es wirkt.',
+  },
+};
 
 const FOKUS_LABELS: Record<string, string> = {
   schmerzen: 'Schmerzen & Beschwerden',
@@ -18,14 +50,11 @@ const FOKUS_LABELS: Record<string, string> = {
 
 export function StepPlan() {
   const { data, reset } = useAnamnese();
-  const { recommendations, vorname, mainFocus, mainFocus2 } = data;
+  const { recommendations, vorname, mainFocus, mainFocus2, gewaehlteAnwendung } = data;
 
   const focusLabel = mainFocus ? FOKUS_LABELS[mainFocus] : '';
   const focus2Label = mainFocus2 ? FOKUS_LABELS[mainFocus2] : null;
-
-  const waLink = `https://wa.me/4982188998881?text=${encodeURIComponent(
-    `Hallo, ich habe gerade den Anamnesebogen ausgefüllt (${vorname}) und würde gerne einen Termin vereinbaren.`,
-  )}`;
+  const naechsterSchritt = gewaehlteAnwendung ? NAECHSTER_SCHRITT[gewaehlteAnwendung] : null;
 
   return (
     <div className="space-y-8">
@@ -86,19 +115,20 @@ export function StepPlan() {
         </div>
       )}
 
-      <div className="rounded-2xl bg-cp-blau text-white p-5 space-y-3">
+      <div className="rounded-2xl bg-cp-blau text-white p-5 space-y-2">
         <p className="font-bold">Dein nächster Schritt</p>
-        <p className="text-sm text-white/80">
-          Wir melden uns bei dir, um einen Termin zu vereinbaren. Oder schreib uns direkt:
-        </p>
-        <a
-          href={waLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full bg-white text-cp-blau font-semibold px-5 py-2.5 text-sm hover:bg-cp-creme transition-colors"
-        >
-          <span>💬</span> WhatsApp – Termin anfragen
-        </a>
+        {naechsterSchritt ? (
+          <>
+            <p className="text-sm text-white/90 leading-relaxed">{naechsterSchritt.text}</p>
+            {naechsterSchritt.softHint && (
+              <p className="text-sm text-white/60 leading-relaxed pt-1">{naechsterSchritt.softHint}</p>
+            )}
+          </>
+        ) : (
+          <p className="text-sm text-white/80">
+            Wir melden uns bei dir zur Bestätigung deines Termins.
+          </p>
+        )}
       </div>
 
       <div className="text-center">

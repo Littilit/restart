@@ -27,7 +27,7 @@ export const ANWENDUNGEN: readonly Anwendung[] = [
     kurzName: 'Eisbox',
     emoji: '❄️',
     kategorie: 'longevity',
-    teaser: '2–3 Minuten bei bis zu −85 °C. Energie, Regeneration, klarer Kopf.',
+    teaser: '2–3 Minuten bei −110 °C. Energie, Regeneration, klarer Kopf.',
     topWirkungen: ['Schnellere Muskel-Regeneration', 'Energie- und Stimmungslift', 'Entzündungs-Reduktion', 'Besserer Schlaf'],
     dauer: '2–3 Min',
   },
