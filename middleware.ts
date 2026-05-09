@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
   if (!isProtected) return NextResponse.next();
 
-  if (pathname === '/admin/login') return NextResponse.next();
+  if (pathname === '/admin/login' || pathname === '/api/admin/login') return NextResponse.next();
 
   const token = request.cookies.get('admin_session')?.value;
   const valid = await getSessionFromToken(token);
