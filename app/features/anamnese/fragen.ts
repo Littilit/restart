@@ -159,6 +159,7 @@ export const DETAIL_FRAGEN: Record<MainFocus, Frage[]> = {
       frage: 'Was führt dich zu uns?',
       options: [
         { id: 'inkontinenz', label: 'Belastungsinkontinenz (Niesen, Husten, Sport)' },
+        { id: 'drang', label: 'Dranginkontinenz (Das Halten fällt mir schwer)' },
         { id: 'postpartum', label: 'Rückbildung nach Schwangerschaft' },
         { id: 'schwäche', label: 'Allgemeine Beckenbodenschwäche' },
         { id: 'praevention', label: 'Prävention & Vorsorge' },

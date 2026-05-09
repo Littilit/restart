@@ -5,6 +5,7 @@ import type { Prisma } from '@prisma/client';
 
 const schema = z.object({
   version: z.number().optional(),
+  gewaehlteAnwendung: z.string().nullable().optional(),
   mainFocus: z.string().nullable().optional(),
   mainFocus2: z.string().nullable().optional(),
   chamber2: z.record(z.string(), z.string()).optional().default({}),
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
     const anamnese = await prisma.anamnese.create({
       data: {
         version: 2,
+        gewaehlteAnwendung: d.gewaehlteAnwendung ?? null,
         mainFocus: d.mainFocus ?? null,
         mainFocus2: d.mainFocus2 ?? null,
         chamber2: d.chamber2 as Prisma.InputJsonValue,

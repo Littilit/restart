@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { type AnamneseData, type AnamneseStep, type MainFocus, type Kontraindikation, STEP_ORDER, COUNTED_STEPS, INITIAL_DATA } from './types';
 import { computeEmpfehlungen } from './empfehlung';
+import type { AnwendungSlug } from '@/data/anwendungen';
 
 interface AnamneseStore {
   data: AnamneseData;
@@ -12,6 +13,7 @@ interface AnamneseStore {
   submitError: string | null;
   submittedId: string | null;
 
+  setGewaehlteAnwendung: (slug: AnwendungSlug) => void;
   setMainFocus: (focus: MainFocus, isSecond?: boolean) => void;
   clearMainFocus2: () => void;
   setChamber2Answer: (questionId: string, answerId: string, isSecond?: boolean) => void;
@@ -34,11 +36,14 @@ export const useAnamnese = create<AnamneseStore>()(
   persist(
     (set, get) => ({
       data: { ...INITIAL_DATA },
-      currentStep: 'kategorie',
+      currentStep: 'anwendung',
       submitStatus: 'idle',
       submitError: null,
       submittedId: null,
       stepCount: COUNTED_STEPS.length,
+
+      setGewaehlteAnwendung: (slug) =>
+        set((s) => ({ data: { ...s.data, gewaehlteAnwendung: slug } })),
 
       setMainFocus: (focus, isSecond = false) =>
         set((s) => {
@@ -109,7 +114,7 @@ export const useAnamnese = create<AnamneseStore>()(
         }),
 
       reset: () =>
-        set({ data: { ...INITIAL_DATA }, currentStep: 'kategorie', submitStatus: 'idle', submitError: null, submittedId: null }),
+        set({ data: { ...INITIAL_DATA }, currentStep: 'anwendung', submitStatus: 'idle', submitError: null, submittedId: null }),
 
       setSubmitState: ({ submitStatus, submitError, submittedId }) =>
         set({ submitStatus, submitError: submitError ?? null, submittedId: submittedId ?? null }),

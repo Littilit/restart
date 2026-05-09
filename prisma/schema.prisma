@@ -11,6 +11,7 @@ datasource db {
 model Anamnese {
   id                      String   @id @default(cuid())
   version                 Int      @default(2)
+  gewaehlteAnwendung      String?
   mainFocus               String?
   mainFocus2              String?
   chamber2                Json     @default("{}")

@@ -2,6 +2,7 @@
 
 import { useAnamnese } from './store';
 import { AnamneseShell } from './AnamneseShell';
+import { StepAnwendung } from './steps/StepAnwendung';
 import { StepKategorie } from './steps/StepKategorie';
 import { StepDetails } from './steps/StepDetails';
 import { StepKontraindikationen } from './steps/StepKontraindikationen';
@@ -11,6 +12,10 @@ import { StepSignatur } from './steps/StepSignatur';
 import { StepPlan } from './steps/StepPlan';
 
 const STEP_META = {
+  anwendung: {
+    title: 'Für welche Anwendung kommst du zu uns?',
+    subtitle: 'Wähle die Anwendung, für die du heute einen Termin hast.',
+  },
   kategorie: {
     title: 'Was bringt dich zu uns?',
     subtitle: 'Wähle deinen Hauptfokus – du kannst auch ein zweites Ziel angeben.',
@@ -55,6 +60,7 @@ export function AnamneseFlow() {
 
   return (
     <AnamneseShell title={meta.title} subtitle={meta.subtitle}>
+      {currentStep === 'anwendung' && <StepAnwendung />}
       {currentStep === 'kategorie' && <StepKategorie />}
       {currentStep === 'details' && <StepDetails />}
       {currentStep === 'kontraindikationen' && <StepKontraindikationen />}

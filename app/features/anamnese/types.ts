@@ -26,6 +26,7 @@ export interface EmpfehlungEntry {
 
 export interface AnamneseData {
   version: 2;
+  gewaehlteAnwendung: AnwendungSlug | null;
   mainFocus: MainFocus | null;
   mainFocus2: MainFocus | null;
   chamber2: Record<string, string>;
@@ -47,6 +48,7 @@ export interface AnamneseData {
 }
 
 export type AnamneseStep =
+  | 'anwendung'
   | 'kategorie'
   | 'details'
   | 'kontraindikationen'
@@ -56,6 +58,7 @@ export type AnamneseStep =
   | 'plan';
 
 export const STEP_ORDER: AnamneseStep[] = [
+  'anwendung',
   'kategorie',
   'details',
   'kontraindikationen',
@@ -69,6 +72,7 @@ export const COUNTED_STEPS = STEP_ORDER.filter((s) => s !== 'plan');
 
 export const INITIAL_DATA: AnamneseData = {
   version: 2,
+  gewaehlteAnwendung: null,
   mainFocus: null,
   mainFocus2: null,
   chamber2: {},
