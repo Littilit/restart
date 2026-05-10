@@ -2,16 +2,16 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Users } from 'lucide-react';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { Users, Tag } from 'lucide-react';
 
-const links = [
-  { href: '/admin', label: 'Kunden', icon: Users },
-];
-
-export default function AdminNav() {
+export default function AdminNav({ tags }: { tags: string[] }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
+
+  const activeTag = pathname === '/admin' ? searchParams.get('tag') : null;
+  const kundenActive = (pathname === '/admin' || pathname.startsWith('/admin/kunden')) && !activeTag;
 
   async function logout() {
     await fetch('/api/admin/logout', { method: 'POST' });
@@ -25,25 +25,45 @@ export default function AdminNav() {
         <p className="text-xs text-white/40 mt-1 font-medium tracking-wide uppercase">CRM</p>
       </div>
 
-      <ul className="flex-1 py-4 px-2 space-y-1">
-        {links.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
-          return (
-            <li key={href}>
-              <Link
-                href={href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  active
-                    ? 'bg-cp-tuerkis text-white'
-                    : 'text-white/60 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                <Icon size={16} />
-                {label}
-              </Link>
-            </li>
-          );
-        })}
+      <ul className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+        <li>
+          <Link
+            href="/admin"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              kundenActive
+                ? 'bg-cp-tuerkis text-white'
+                : 'text-white/60 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Users size={16} />
+            Kunden
+          </Link>
+        </li>
+
+        {tags.length > 0 && (
+          <li>
+            <p className="px-3 pt-3 pb-1 text-xs text-white/30 uppercase tracking-wider font-semibold">
+              Tags
+            </p>
+            <ul className="space-y-0.5">
+              {tags.map((tag) => (
+                <li key={tag}>
+                  <Link
+                    href={`/admin?tag=${encodeURIComponent(tag)}`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      activeTag === tag
+                        ? 'bg-cp-tuerkis text-white'
+                        : 'text-white/50 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Tag size={12} />
+                    {tag}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </li>
+        )}
       </ul>
 
       <div className="px-2 pb-4">

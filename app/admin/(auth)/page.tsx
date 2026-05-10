@@ -22,11 +22,11 @@ function monthLabel(date: Date) {
 }
 
 interface Props {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; tag?: string }>;
 }
 
 export default async function AdminDashboard({ searchParams }: Props) {
-  const { status, q } = await searchParams;
+  const { status, q, tag } = await searchParams;
 
   const filterStatus = STATUS_ORDER.includes(status as CustomerStatus)
     ? (status as CustomerStatus)
@@ -35,6 +35,7 @@ export default async function AdminDashboard({ searchParams }: Props) {
   const customers = await prisma.customer.findMany({
     where: {
       ...(filterStatus ? { status: filterStatus } : {}),
+      ...(tag ? { tags: { has: tag } } : {}),
       ...(q
         ? {
             OR: [
@@ -56,20 +57,24 @@ export default async function AdminDashboard({ searchParams }: Props) {
   });
   const countMap = Object.fromEntries(counts.map((c) => [c.status, c._count]));
 
+  const tagParam = tag ? `&tag=${encodeURIComponent(tag)}` : '';
+
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-cp-blau">Kunden</h1>
+        <h1 className="text-2xl font-semibold text-cp-blau">
+          {tag ? <>Kunden <span className="text-base font-normal text-gray-400">— Tag: {tag}</span></> : 'Kunden'}
+        </h1>
         <p className="text-sm text-gray-500 mt-1">{customers.length} Einträge</p>
       </div>
 
       {/* Filter-Tabs */}
       <div className="flex flex-wrap gap-2 mb-4">
-        <FilterTab href="/admin" label="Alle" active={!filterStatus} count={Object.values(countMap).reduce((a, b) => a + b, 0)} />
+        <FilterTab href={`/admin${tag ? `?tag=${encodeURIComponent(tag)}` : ''}`} label="Alle" active={!filterStatus} count={Object.values(countMap).reduce((a, b) => a + b, 0)} />
         {STATUS_ORDER.map((s) => (
           <FilterTab
             key={s}
-            href={`/admin?status=${s}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
+            href={`/admin?status=${s}${q ? `&q=${encodeURIComponent(q)}` : ''}${tagParam}`}
             label={STATUS_CONFIG[s].label}
             active={filterStatus === s}
             count={countMap[s] ?? 0}
@@ -80,6 +85,7 @@ export default async function AdminDashboard({ searchParams }: Props) {
       {/* Suche */}
       <form className="mb-4">
         {filterStatus && <input type="hidden" name="status" value={filterStatus} />}
+        {tag && <input type="hidden" name="tag" value={tag} />}
         <input
           type="search"
           name="q"

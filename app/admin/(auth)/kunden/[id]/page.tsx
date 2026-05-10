@@ -35,17 +35,21 @@ export default async function KundeDetail({ params, searchParams }: Props) {
   const { tab } = await searchParams;
   const activeTab: Tab = (tab === 'empfehlungen' || tab === 'notizen') ? tab : 'uebersicht';
 
-  const customer = await prisma.customer.findUnique({
-    where: { id },
-    include: {
-      anamnesen: { orderBy: { createdAt: 'desc' }, take: 5 },
-      empfehlungen: { orderBy: { createdAt: 'desc' } },
-      notizen: { orderBy: { createdAt: 'desc' } },
-    },
-  });
+  const [customer, allCustomers] = await Promise.all([
+    prisma.customer.findUnique({
+      where: { id },
+      include: {
+        anamnesen: { orderBy: { createdAt: 'desc' }, take: 5 },
+        empfehlungen: { orderBy: { createdAt: 'desc' } },
+        notizen: { orderBy: { createdAt: 'desc' } },
+      },
+    }),
+    prisma.customer.findMany({ select: { tags: true } }),
+  ]);
 
   if (!customer) notFound();
 
+  const allTags = [...new Set(allCustomers.flatMap((c) => c.tags))].sort();
   const latestAnamnese = customer.anamnesen[0];
 
   return (
@@ -136,7 +140,7 @@ export default async function KundeDetail({ params, searchParams }: Props) {
 
             <div className="bg-white rounded-xl border border-gray-200 p-5">
               <h2 className="text-sm font-semibold text-gray-700 mb-3">Tags</h2>
-              <TagsEditor customerId={customer.id} initial={customer.tags} />
+              <TagsEditor customerId={customer.id} initial={customer.tags} allTags={allTags} />
             </div>
           </div>
 
