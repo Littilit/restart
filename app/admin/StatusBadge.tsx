@@ -7,6 +7,7 @@ const CONFIG: Record<CustomerStatus, { label: string; className: string }> = {
   karten_kunde:      { label: 'Karten gekauft',     className: 'bg-emerald-100 text-emerald-800' },
   aggregator:        { label: 'Aggregator',          className: 'bg-purple-100 text-purple-800' },
   angebot_nachfassen:{ label: 'Nachfassen',         className: 'bg-yellow-100 text-yellow-800' },
+  kein_kauf:         { label: 'Kein Kauf',          className: 'bg-gray-100 text-gray-600' },
 };
 
 export default function StatusBadge({ status }: { status: CustomerStatus }) {

@@ -10,7 +10,16 @@ const STATUS_ORDER: CustomerStatus[] = [
   'karten_kunde',
   'aggregator',
   'angebot_nachfassen',
+  'kein_kauf',
 ];
+
+function monthKey(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth()}`;
+}
+
+function monthLabel(date: Date) {
+  return date.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+}
 
 interface Props {
   searchParams: Promise<{ status?: string; q?: string }>;
@@ -97,42 +106,58 @@ export default async function AdminDashboard({ searchParams }: Props) {
                 <th className="px-4 py-3 font-medium text-gray-600 hidden xl:table-cell">Seit</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {customers.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/kunden/${c.id}`}
-                      className="font-medium text-cp-blau hover:text-cp-tuerkis transition-colors"
-                    >
-                      {c.vorname} {c.nachname}
-                    </Link>
-                    {c.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {c.tags.map((tag) => (
-                          <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{c.email}</td>
-                  <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{c.telefon}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={c.status} />
-                  </td>
-                  <td className="px-4 py-3 text-gray-500 text-center hidden sm:table-cell">
-                    {c._count.anamnesen}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500 text-center hidden sm:table-cell">
-                    {c._count.empfehlungen}
-                  </td>
-                  <td className="px-4 py-3 text-gray-400 hidden xl:table-cell">
-                    {new Date(c.createdAt).toLocaleDateString('de-DE')}
-                  </td>
-                </tr>
-              ))}
+            <tbody>
+              {customers.flatMap((c, i) => {
+                const curr = new Date(c.createdAt);
+                const prev = i > 0 ? new Date(customers[i - 1].createdAt) : null;
+                const newMonth = !prev || monthKey(prev) !== monthKey(curr);
+                const rows = [];
+                if (newMonth) {
+                  rows.push(
+                    <tr key={`sep-${monthKey(curr)}`} className="bg-gray-50 border-t-2 border-gray-300">
+                      <td colSpan={7} className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        {monthLabel(curr)}
+                      </td>
+                    </tr>
+                  );
+                }
+                rows.push(
+                  <tr key={c.id} className="hover:bg-gray-50 transition-colors border-t border-gray-100">
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/kunden/${c.id}`}
+                        className="font-medium text-cp-blau hover:text-cp-tuerkis transition-colors"
+                      >
+                        {c.vorname} {c.nachname}
+                      </Link>
+                      {c.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {c.tags.map((tag) => (
+                            <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{c.email}</td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{c.telefon}</td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={c.status} />
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 text-center hidden sm:table-cell">
+                      {c._count.anamnesen}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 text-center hidden sm:table-cell">
+                      {c._count.empfehlungen}
+                    </td>
+                    <td className="px-4 py-3 text-gray-400 hidden xl:table-cell">
+                      {curr.toLocaleDateString('de-DE')}
+                    </td>
+                  </tr>
+                );
+                return rows;
+              })}
             </tbody>
           </table>
         </div>

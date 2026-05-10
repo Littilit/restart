@@ -62,6 +62,7 @@ enum CustomerStatus {
   karten_kunde
   aggregator
   angebot_nachfassen
+  kein_kauf
 }
 
 model Empfehlung {
