@@ -71,6 +71,7 @@ model Empfehlung {
   customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   typ           EmpfehlungTyp
   anwendungen   Json
+  einleitung    String?       @db.Text
   zusatzhinweis String?       @db.Text
   preisSnapshot Json          @default("{}")
   shareToken    String        @unique @default(cuid())
@@ -81,6 +82,7 @@ model Empfehlung {
 enum EmpfehlungTyp {
   neukunde
   folge
+  experte
 }
 
 model Note {

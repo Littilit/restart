@@ -213,6 +213,12 @@ export default async function KundeDetail({ params, searchParams }: Props) {
             >
               + Folgeangebot
             </Link>
+            <Link
+              href={`/admin/kunden/${id}/empfehlung/neu?typ=experte`}
+              className="px-4 py-2 text-sm font-medium bg-cp-blau text-white rounded-lg hover:opacity-90 transition-opacity"
+            >
+              + Expertenempfehlung
+            </Link>
           </div>
 
           {customer.empfehlungen.length === 0 ? (
@@ -233,10 +239,16 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           e.typ === 'neukunde'
                             ? 'bg-blue-100 text-blue-800'
+                            : e.typ === 'experte'
+                            ? 'bg-cp-blau text-white'
                             : 'bg-emerald-100 text-emerald-800'
                         }`}
                       >
-                        {e.typ === 'neukunde' ? 'Neukunden-Angebot' : 'Folgeangebot'}
+                        {e.typ === 'neukunde'
+                          ? 'Neukunden-Angebot'
+                          : e.typ === 'experte'
+                          ? 'Expertenempfehlung'
+                          : 'Folgeangebot'}
                       </span>
                       <div className="text-sm">
                         <div className="text-gray-800">
