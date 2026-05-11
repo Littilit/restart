@@ -5,6 +5,7 @@ import StatusBadge from '../../../StatusBadge';
 import StatusEditor from './StatusEditor';
 import TagsEditor from './TagsEditor';
 import NotizenEditor from './NotizenEditor';
+import ErstTerminEditor from './ErstTerminEditor';
 import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
 import type { Kontraindikation } from '@/features/anamnese/types';
 
@@ -128,6 +129,10 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                 })}
               />
               <Row label="Anamnesen" value={String(customer.anamnesen.length)} />
+              <div className="flex gap-2 text-sm">
+                <dt className="w-44 shrink-0 text-gray-500">Erster Termin</dt>
+                <dd><ErstTerminEditor customerId={customer.id} erstTermin={customer.erstTermin} /></dd>
+              </div>
             </dl>
           </div>
 

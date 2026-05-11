@@ -24,14 +24,33 @@ export async function GET(_: Request, { params }: Params) {
 
 export async function PATCH(request: Request, { params }: Params) {
   const { id } = await params;
-  const body = await request.json() as { status?: string; tags?: unknown };
+  const body = await request.json() as {
+    status?: string;
+    tags?: unknown;
+    erstTermin?: string | null;
+    servicegesprachErledigt?: boolean;
+  };
 
-  const data: { status?: CustomerStatus; tags?: string[] } = {};
+  const data: {
+    status?: CustomerStatus;
+    tags?: string[];
+    erstTermin?: Date | null;
+    servicegesprachAm?: Date | null;
+  } = {};
+
   if (typeof body.status === 'string' && VALID_STATUS.includes(body.status as CustomerStatus)) {
     data.status = body.status as CustomerStatus;
   }
   if (Array.isArray(body.tags)) {
     data.tags = body.tags.filter((t): t is string => typeof t === 'string');
+  }
+  if ('erstTermin' in body) {
+    data.erstTermin = body.erstTermin ? new Date(body.erstTermin) : null;
+  }
+  if (body.servicegesprachErledigt === true) {
+    data.servicegesprachAm = new Date();
+  } else if (body.servicegesprachErledigt === false) {
+    data.servicegesprachAm = null;
   }
 
   const customer = await prisma.customer.update({ where: { id }, data });

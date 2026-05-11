@@ -46,13 +46,15 @@ model Customer {
   adresse          String
   status           CustomerStatus @default(neukunde)
   tags             String[]       @default([])
-  consentMarketing Boolean        @default(false)
-  herkunft         String         @default("")
-  anamnesen        Anamnese[]
-  empfehlungen     Empfehlung[]
-  notizen          Note[]
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  consentMarketing  Boolean        @default(false)
+  herkunft          String         @default("")
+  erstTermin        DateTime?
+  servicegesprachAm DateTime?
+  anamnesen         Anamnese[]
+  empfehlungen      Empfehlung[]
+  notizen           Note[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 }
 
 enum CustomerStatus {
