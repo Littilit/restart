@@ -13,7 +13,13 @@ const schema = z.object({
   nachname: z.string().min(2, 'Mindestens 2 Zeichen'),
   email: z.string().email('Gültige E-Mail-Adresse erforderlich'),
   telefon: z.string().min(6, 'Mindestens 6 Zeichen'),
-  geburtsdatum: z.string().min(4, 'Bitte Geburtsdatum angeben'),
+  geburtsdatum: z.string().refine((val) => {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return false;
+    const now = new Date();
+    const min = new Date(now.getFullYear() - 100, now.getMonth(), now.getDate());
+    return d <= now && d >= min;
+  }, 'Bitte ein gültiges Geburtsdatum angeben (max. 100 Jahre zurück)'),
   adresse: z.string().min(3, 'Mindestens 3 Zeichen'),
 });
 
@@ -73,6 +79,8 @@ export function StepDaten() {
         type="date"
         leftIcon={<Calendar className="h-4 w-4" />}
         error={errors.geburtsdatum?.message}
+        max={new Date().toISOString().substring(0, 10)}
+        min={new Date(new Date().getFullYear() - 100, new Date().getMonth(), new Date().getDate()).toISOString().substring(0, 10)}
         {...register('geburtsdatum')}
       />
       <Input
