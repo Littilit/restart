@@ -13,6 +13,7 @@
     "@react-pdf/renderer": "^4.5.1",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
+    "firebase-admin": "^13.9.0",
     "html2canvas": "^1.4.1",
     "jose": "^6.2.3",
     "jspdf": "^4.2.1",
