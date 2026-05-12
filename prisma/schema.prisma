@@ -34,6 +34,9 @@ model Anamnese {
   createdAt               DateTime  @default(now())
   customerId              String?
   customer                Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([createdAt])
 }
 
 model Customer {
@@ -55,6 +58,8 @@ model Customer {
   notizen           Note[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+
+  @@index([createdAt])
 }
 
 enum CustomerStatus {
@@ -79,6 +84,8 @@ model Empfehlung {
   shareToken    String        @unique @default(cuid())
   pdfErzeugtAm  DateTime?
   createdAt     DateTime      @default(now())
+
+  @@index([customerId])
 }
 
 enum EmpfehlungTyp {
@@ -93,6 +100,8 @@ model Note {
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   body       String   @db.Text
   createdAt  DateTime @default(now())
+
+  @@index([customerId])
 }
 
 model User {

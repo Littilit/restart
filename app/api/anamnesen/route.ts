@@ -22,7 +22,7 @@ const schema = z.object({
   consentDsgvo: z.boolean(),
   consentGesundheitsdaten: z.boolean(),
   consentMarketing: z.boolean().optional().default(false),
-  signatureDataUrl: z.string().nullable().optional(),
+  signatureDataUrl: z.string().max(500_000).nullable().optional(),
   herkunft: z.string().optional().default(''),
   userAgent: z.string().optional().default(''),
 });
