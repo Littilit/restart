@@ -5,7 +5,7 @@ import { PREISE, SLUG_KATEGORIE } from '@/data/preise';
 import type { AnwendungSlug } from '@/data/anwendungen';
 import type { EmpfehlungTyp } from '@prisma/client';
 
-const VALID_TYP: EmpfehlungTyp[] = ['neukunde', 'folge'];
+const VALID_TYP: EmpfehlungTyp[] = ['neukunde', 'folge', 'experte'];
 
 const VALID_SLUGS: AnwendungSlug[] = [
   'eisbox', 'redlight', 'infrarotsauna', 'boa-lymphmassage',
@@ -25,6 +25,7 @@ export async function POST(request: Request, { params }: Params) {
   const body = await request.json() as {
     typ?: string;
     anwendungen?: unknown;
+    einleitung?: string;
     zusatzhinweis?: string;
   };
 
@@ -74,6 +75,9 @@ export async function POST(request: Request, { params }: Params) {
       customerId: id,
       typ: body.typ as EmpfehlungTyp,
       anwendungen: anwendungen as unknown as Prisma.InputJsonValue,
+      einleitung: typeof body.einleitung === 'string' && body.einleitung.trim() !== ''
+        ? body.einleitung
+        : null,
       zusatzhinweis: typeof body.zusatzhinweis === 'string' && body.zusatzhinweis.trim() !== ''
         ? body.zusatzhinweis
         : null,

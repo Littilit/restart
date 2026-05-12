@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import type { CustomerStatus } from '@prisma/client';
 import StatusBadge, { STATUS_CONFIG } from '../StatusBadge';
+import ServicegesprachAlarmSektion from '../ServicegesprachAlarmSektion';
 
 const STATUS_ORDER: CustomerStatus[] = [
   'neukunde',
@@ -32,6 +33,17 @@ export default async function AdminDashboard({ searchParams }: Props) {
     ? (status as CustomerStatus)
     : undefined;
 
+  const siebenTageVor = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const alarmKunden = await prisma.customer.findMany({
+    where: {
+      erstTermin: { lte: siebenTageVor },
+      servicegesprachAm: null,
+      status: { not: 'aggregator' },
+    },
+    select: { id: true, vorname: true, nachname: true, status: true, erstTermin: true },
+    orderBy: { erstTermin: 'asc' },
+  });
+
   const customers = await prisma.customer.findMany({
     where: {
       ...(filterStatus ? { status: filterStatus } : {}),
@@ -61,6 +73,8 @@ export default async function AdminDashboard({ searchParams }: Props) {
 
   return (
     <div>
+      <ServicegesprachAlarmSektion kunden={alarmKunden.filter((k) => k.erstTermin !== null) as import('../ServicegesprachAlarmSektion').AlarmKunde[]} />
+
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-cp-blau">
           {tag ? <>Kunden <span className="text-base font-normal text-gray-400">— Tag: {tag}</span></> : 'Kunden'}

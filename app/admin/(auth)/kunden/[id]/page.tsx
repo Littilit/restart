@@ -5,6 +5,7 @@ import StatusBadge from '../../../StatusBadge';
 import StatusEditor from './StatusEditor';
 import TagsEditor from './TagsEditor';
 import NotizenEditor from './NotizenEditor';
+import ErstTerminEditor from './ErstTerminEditor';
 import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
 import type { Kontraindikation } from '@/features/anamnese/types';
 
@@ -128,6 +129,10 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                 })}
               />
               <Row label="Anamnesen" value={String(customer.anamnesen.length)} />
+              <div className="flex gap-2 text-sm">
+                <dt className="w-44 shrink-0 text-gray-500">Erster Termin</dt>
+                <dd><ErstTerminEditor customerId={customer.id} erstTermin={customer.erstTermin} /></dd>
+              </div>
             </dl>
           </div>
 
@@ -213,6 +218,12 @@ export default async function KundeDetail({ params, searchParams }: Props) {
             >
               + Folgeangebot
             </Link>
+            <Link
+              href={`/admin/kunden/${id}/empfehlung/neu?typ=experte`}
+              className="px-4 py-2 text-sm font-medium bg-cp-blau text-white rounded-lg hover:opacity-90 transition-opacity"
+            >
+              + Expertenempfehlung
+            </Link>
           </div>
 
           {customer.empfehlungen.length === 0 ? (
@@ -233,10 +244,16 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           e.typ === 'neukunde'
                             ? 'bg-blue-100 text-blue-800'
+                            : e.typ === 'experte'
+                            ? 'bg-cp-blau text-white'
                             : 'bg-emerald-100 text-emerald-800'
                         }`}
                       >
-                        {e.typ === 'neukunde' ? 'Neukunden-Angebot' : 'Folgeangebot'}
+                        {e.typ === 'neukunde'
+                          ? 'Neukunden-Angebot'
+                          : e.typ === 'experte'
+                          ? 'Expertenempfehlung'
+                          : 'Folgeangebot'}
                       </span>
                       <div className="text-sm">
                         <div className="text-gray-800">

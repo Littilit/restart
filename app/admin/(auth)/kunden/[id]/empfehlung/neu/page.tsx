@@ -4,7 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { computeEmpfehlungen } from '@/features/anamnese/empfehlung';
 import type { MainFocus } from '@/features/anamnese/types';
 import { ANWENDUNGEN, type AnwendungSlug } from '@/data/anwendungen';
+import { RESEARCH } from '@/data/research';
 import EmpfehlungEditor from './EmpfehlungEditor';
+import ExpertenEmpfehlungEditor from './ExpertenEmpfehlungEditor';
 
 const VALID_SLUGS = new Set<string>(ANWENDUNGEN.map((a) => a.slug));
 
@@ -16,6 +18,8 @@ interface Props {
 export default async function NeueEmpfehlung({ params, searchParams }: Props) {
   const { id } = await params;
   const { typ: typParam } = await searchParams;
+
+  const isExperte = typParam === 'experte';
   const typ: 'neukunde' | 'folge' = typParam === 'folge' ? 'folge' : 'neukunde';
 
   const customer = await prisma.customer.findUnique({
@@ -28,9 +32,23 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
 
   if (!customer) notFound();
 
+  const anamnese = customer.anamnesen[0];
+  const chamber2 = (anamnese?.chamber2 ?? {}) as Record<string, string>;
+  const chamber2b = (anamnese?.chamber2b ?? {}) as Record<string, string>;
+  const mainFocus = (anamnese?.mainFocus ?? null) as MainFocus | null;
+  const mainFocus2 = (anamnese?.mainFocus2 ?? null) as MainFocus | null;
+
+  const vorschlag = computeEmpfehlungen(mainFocus, chamber2, mainFocus2, chamber2b);
+
   let initial: { slug: AnwendungSlug; haeufigkeitText: string; begruendung: string }[];
 
-  if (typ === 'folge' && customer.empfehlungen.length > 0) {
+  if (isExperte) {
+    initial = vorschlag.map((entry) => ({
+      slug: entry.slug,
+      haeufigkeitText: RESEARCH[entry.slug]?.sessions ?? entry.sessions,
+      begruendung: '',
+    }));
+  } else if (typ === 'folge' && customer.empfehlungen.length > 0) {
     const letzteEmpfehlung = customer.empfehlungen[0];
     const raw = Array.isArray(letzteEmpfehlung.anwendungen)
       ? letzteEmpfehlung.anwendungen
@@ -54,19 +72,22 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
         };
       });
   } else {
-    const anamnese = customer.anamnesen[0];
-    const chamber2 = (anamnese?.chamber2 ?? {}) as Record<string, string>;
-    const chamber2b = (anamnese?.chamber2b ?? {}) as Record<string, string>;
-    const mainFocus = (anamnese?.mainFocus ?? null) as MainFocus | null;
-    const mainFocus2 = (anamnese?.mainFocus2 ?? null) as MainFocus | null;
-
-    const vorschlag = computeEmpfehlungen(mainFocus, chamber2, mainFocus2, chamber2b);
     initial = vorschlag.map((entry) => ({
       slug: entry.slug,
       haeufigkeitText: entry.sessions,
       begruendung: entry.explanation,
     }));
   }
+
+  const initialEinleitung = mainFocus
+    ? `${customer.vorname} ${customer.nachname} hat im Fokus: ${mainFocus}${mainFocus2 ? ` und ${mainFocus2}` : ''}. Die folgende Expertenempfehlung basiert auf den Anamnese-Daten und der wissenschaftlichen Studienlage zu den ausgewählten Anwendungen.`
+    : '';
+
+  const typLabel = isExperte
+    ? 'Expertenempfehlung'
+    : typ === 'neukunde'
+    ? 'Neukunden-Angebot'
+    : 'Folgeangebot';
 
   return (
     <div>
@@ -80,12 +101,18 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
         <h1 className="text-2xl font-semibold text-cp-blau">
           Neue Empfehlung für {customer.vorname} {customer.nachname}
         </h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          {typ === 'neukunde' ? 'Neukunden-Angebot' : 'Folgeangebot'}
-        </p>
+        <p className="text-sm text-gray-500 mt-0.5">{typLabel}</p>
       </div>
 
-      <EmpfehlungEditor customerId={id} typ={typ} initial={initial} />
+      {isExperte ? (
+        <ExpertenEmpfehlungEditor
+          customerId={id}
+          initial={initial}
+          initialEinleitung={initialEinleitung}
+        />
+      ) : (
+        <EmpfehlungEditor customerId={id} typ={typ} initial={initial} />
+      )}
     </div>
   );
 }
