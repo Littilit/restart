@@ -16,8 +16,10 @@ export default async function KalenderPage() {
   let fehler: string | null = null;
   try {
     termine = await getTermine(heute, ende);
-  } catch {
-    fehler = 'Shore-Kalender konnte nicht geladen werden.';
+  } catch (e) {
+    const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    console.error('[Shore-Kalender] Fetch fehlgeschlagen:', e);
+    fehler = `Shore-Kalender konnte nicht geladen werden — ${msg}`;
   }
 
   return (

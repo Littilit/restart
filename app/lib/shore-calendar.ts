@@ -17,6 +17,15 @@ let cache: { time: number; key: string; data: Termin[] } | null = null;
 const TTL_MS = 60_000;
 
 export async function getTermine(start: Date, end: Date): Promise<Termin[]> {
+  const serverUrl = process.env.SHORE_CALDAV_URL;
+  const username = process.env.SHORE_USERNAME;
+  const password = process.env.SHORE_PASSWORD;
+  if (!serverUrl || !username || !password) {
+    throw new Error(
+      `Env-Vars fehlen: SHORE_CALDAV_URL=${!!serverUrl}, SHORE_USERNAME=${!!username}, SHORE_PASSWORD=${!!password}`
+    );
+  }
+
   const key = `${start.toISOString()}|${end.toISOString()}`;
   if (cache && cache.key === key && Date.now() - cache.time < TTL_MS) {
     return cache.data;
@@ -25,17 +34,16 @@ export async function getTermine(start: Date, end: Date): Promise<Termin[]> {
   const { createDAVClient } = await import('tsdav');
   const ical = (await import('node-ical')).default;
 
+  console.log('[Shore] Verbinde zu CalDAV:', serverUrl, 'als', username);
   const client = await createDAVClient({
-    serverUrl: process.env.SHORE_CALDAV_URL!,
-    credentials: {
-      username: process.env.SHORE_USERNAME!,
-      password: process.env.SHORE_PASSWORD!,
-    },
+    serverUrl,
+    credentials: { username, password },
     authMethod: 'Basic',
     defaultAccountType: 'caldav',
   });
 
   const calendars = await client.fetchCalendars();
+  console.log('[Shore] Kalender gefunden:', calendars.length, calendars.map((c) => c.displayName));
   if (!calendars.length) return [];
 
   const objects = await client.fetchCalendarObjects({
