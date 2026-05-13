@@ -62,6 +62,17 @@ export const DETAIL_FRAGEN: Record<MainFocus, Frage[]> = {
       ],
       required: true,
     },
+    {
+      type: 'chips',
+      id: 'charakter',
+      frage: 'Wie fühlst du deine Schmerzen?',
+      options: [
+        { id: 'stechend', label: 'Stechend / scharf' },
+        { id: 'dumpf', label: 'Dumpf / drückend' },
+        { id: 'ziehend', label: 'Ziehend / verspannt' },
+      ],
+      required: true,
+    },
   ],
 
   sport: [

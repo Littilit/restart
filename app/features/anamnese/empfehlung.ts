@@ -12,20 +12,28 @@ function empfehleForFocus(focus: MainFocus, chamber: Chamber): AnwendungSlug[] {
     case 'schmerzen': {
       const loc = chamber['location'] ?? '';
       const dauer = chamber['dauer'] ?? '';
+      const charakter = chamber['charakter'] ?? '';
+
+      const hatKaelteChar = charakter.includes('stechend');
+      const hatWaermeChar = charakter.includes('dumpf') || charakter.includes('ziehend');
 
       if (loc.includes('ruecken')) {
         if (dauer === 'chronisch' || dauer === 'lang') {
+          if (hatKaelteChar) return ['eisbox', 'infrarotsauna', 'armstrong'];
           return ['infrarotsauna', 'armstrong', 'beckenbodenstuhl'];
         }
+        if (hatWaermeChar) return ['infrarotsauna', 'armstrong', 'eisbox'];
         return ['eisbox', 'infrarotsauna', 'armstrong'];
       }
       if (
         (loc.includes('gelenke') || loc.includes('knie') || loc.includes('huefte')) &&
         (dauer === 'chronisch' || dauer === 'lang')
       ) {
+        if (hatKaelteChar) return ['eisbox', 'redlight', 'infrarotsauna'];
         return ['redlight', 'infrarotsauna', 'eisbox'];
       }
       if (dauer === 'akut' || loc.includes('muskeln')) {
+        if (hatWaermeChar) return ['infrarotsauna', 'eisbox', 'redlight'];
         return ['eisbox', 'redlight', 'infrarotsauna'];
       }
       return ['redlight', 'eisbox', 'infrarotsauna'];
@@ -261,8 +269,11 @@ function generateExplanation(
 function schmerzenExplanation(slug: AnwendungSlug, chamber: Chamber): string {
   const loc = chamber['location'] ?? '';
   const dauer = chamber['dauer'] ?? '';
+  const charakter = chamber['charakter'] ?? '';
   const isChronisch = dauer === 'chronisch' || dauer === 'lang';
   const isAkut = dauer === 'akut' || dauer === 'kurz';
+  const hatKaelteChar = charakter.includes('stechend');
+  const hatWaermeChar = charakter.includes('dumpf') || charakter.includes('ziehend');
 
   const locLabel = joinList(loc, LOCATION_TEXT);
   const dauerLabel = DAUER_SCHMERZ_TEXT[dauer] ?? '';
@@ -271,10 +282,14 @@ function schmerzenExplanation(slug: AnwendungSlug, chamber: Chamber): string {
 
   switch (slug) {
     case 'eisbox':
+      if (isAkut && hatKaelteChar)
+        return `Du hast ${locRef} angegeben${dauerRef}. Stechende Schmerzen sind oft entzündlicher Natur – Kälte hemmt die Entzündungskaskade direkt und blockiert Schmerzsignale innerhalb von Sekunden.`;
       if (isAkut)
         return `Du hast ${locRef} angegeben${dauerRef}. Die Eisbox blockiert Schmerzsignale innerhalb von Sekunden und stoppt die akute Entzündungskaskade – direkte Linderung ohne Medikamente.`;
       if (isChronisch && loc.includes('ruecken'))
         return `Du hast Beschwerden an Rücken / Nacken angegeben${dauerRef}. Systemische Kälte bei −110 °C senkt pro-entzündliche Zytokine (IL-6, TNF-α) messbar – das Immunsystem schaltet in den Reparatur-Modus.`;
+      if (hatKaelteChar)
+        return `Du hast ${locRef} angegeben${dauerRef}. Stechende Schmerzen reagieren besonders gut auf Kälteanwendungen – Kryotherapie hemmt Entzündungsmediatoren und blockiert Schmerzsignale messbar.`;
       return `Du hast ${locRef} angegeben${dauerRef}. Kryotherapie hemmt Entzündungsmediatoren und blockiert Schmerzsignale – messbar, ohne Medikamente.`;
 
     case 'redlight':
@@ -285,6 +300,10 @@ function schmerzenExplanation(slug: AnwendungSlug, chamber: Chamber): string {
       return `Du hast ${locRef} angegeben. Photobiomodulation stimuliert die Zellenergie und reduziert Entzündungen genau in dem Gewebe, das betroffen ist.`;
 
     case 'infrarotsauna':
+      if (hatWaermeChar && loc.includes('ruecken'))
+        return `Du hast Beschwerden an Rücken / Nacken angegeben${dauerRef}. Dumpfe, ziehende Schmerzen entstehen tief im Muskel- und Fasziengewebe – Ferninfrarot dringt 4–5 cm tief ein und löst dort an der Quelle.`;
+      if (hatWaermeChar)
+        return `Du hast ${locRef} angegeben${dauerRef}. Dumpfe, ziehende Schmerzen entstehen tief im Muskel- und Fasziengewebe – Ferninfrarot dringt 4–5 cm tief ein und löst dort an der Quelle.`;
       if (loc.includes('ruecken'))
         return `Du hast Beschwerden an Rücken / Nacken angegeben${dauerRef}. Ferninfrarot dringt 4–5 cm ins Gewebe ein und löst muskuläre Verspannungen direkt an der Quelle auf – wirksamer als Wärmepflaster, ohne Nebenwirkungen.`;
       if (loc.includes('muskeln'))
