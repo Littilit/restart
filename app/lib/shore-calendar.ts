@@ -1,6 +1,3 @@
-import { createDAVClient } from 'tsdav';
-import ical from 'node-ical';
-
 type ParameterValue = string | { val: string; params: Record<string, string> };
 
 function str(v: ParameterValue | undefined): string | undefined {
@@ -16,7 +13,18 @@ export interface Termin {
   description?: string;
 }
 
+let cache: { time: number; key: string; data: Termin[] } | null = null;
+const TTL_MS = 60_000;
+
 export async function getTermine(start: Date, end: Date): Promise<Termin[]> {
+  const key = `${start.toISOString()}|${end.toISOString()}`;
+  if (cache && cache.key === key && Date.now() - cache.time < TTL_MS) {
+    return cache.data;
+  }
+
+  const { createDAVClient } = await import('tsdav');
+  const ical = (await import('node-ical')).default;
+
   const client = await createDAVClient({
     serverUrl: process.env.SHORE_CALDAV_URL!,
     credentials: {
@@ -44,7 +52,7 @@ export async function getTermine(start: Date, end: Date): Promise<Termin[]> {
     const parsed = ical.parseICS(obj.data);
     for (const component of Object.values(parsed)) {
       if (!component || component.type !== 'VEVENT') continue;
-      const event = component as ical.VEvent;
+      const event = component;
       termine.push({
         uid: event.uid ?? obj.url,
         title: str(event.summary) ?? '(ohne Titel)',
@@ -55,5 +63,7 @@ export async function getTermine(start: Date, end: Date): Promise<Termin[]> {
     }
   }
 
-  return termine.sort((a, b) => a.start.getTime() - b.start.getTime());
+  termine.sort((a, b) => a.start.getTime() - b.start.getTime());
+  cache = { time: Date.now(), key, data: termine };
+  return termine;
 }

@@ -4,7 +4,8 @@ import { de } from 'date-fns/locale';
 import Link from 'next/link';
 import { RefreshCw } from 'lucide-react';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export default async function KalenderPage() {
   const heute = startOfDay(new Date());
