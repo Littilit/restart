@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { CustomerStatus } from '@prisma/client';
 import { STATUS_CONFIG } from './StatusBadge';
+import AufgabeErledigtForm, { type ErledigungData } from './AufgabeErledigtForm';
 
 const HAT_GEKAUFT: CustomerStatus[] = ['mitglied', 'startangebot', 'karten_kunde'];
 
@@ -36,20 +37,32 @@ function daysSince(date: Date) {
 
 function AlarmKarte({ kunde }: { kunde: AlarmKunde }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [pending, startTransition] = useTransition();
+  const [skriptOpen, setSkriptOpen] = useState(false);
+  const [erledigtFormOpen, setErledigtFormOpen] = useState(false);
+  const [, startTransition] = useTransition();
 
   const tage = daysSince(kunde.erstTermin);
   const hatGekauft = HAT_GEKAUFT.includes(kunde.status);
   const skript = hatGekauft ? SKRIPT_KAUF : SKRIPT_KEIN_KAUF;
   const cfg = STATUS_CONFIG[kunde.status];
 
-  async function erledigen() {
+  async function onBestaetigen(data: ErledigungData) {
     await fetch(`/api/admin/customers/${kunde.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ servicegesprachErledigt: true }),
     });
+    if (data.notiz) {
+      await fetch(`/api/admin/customers/${kunde.id}/notizen`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: data.notiz }),
+      });
+    }
+  }
+
+  function onErledigt() {
+    setErledigtFormOpen(false);
     startTransition(() => router.refresh());
   }
 
@@ -79,25 +92,35 @@ function AlarmKarte({ kunde }: { kunde: AlarmKunde }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setSkriptOpen((v) => !v)}
             className="text-xs text-gray-500 hover:text-cp-blau transition-colors underline"
           >
-            {open ? 'Skript schließen' : 'Telefonskript'}
+            {skriptOpen ? 'Skript schließen' : 'Telefonskript'}
           </button>
-          <button
-            onClick={erledigen}
-            disabled={pending}
-            className="text-xs px-2.5 py-1 rounded-lg bg-cp-tuerkis text-white hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            Erledigt
-          </button>
+          {!erledigtFormOpen && (
+            <button
+              onClick={() => setErledigtFormOpen(true)}
+              className="text-xs px-2.5 py-1 rounded-lg bg-cp-tuerkis text-white hover:opacity-90 transition-opacity"
+            >
+              Erledigt
+            </button>
+          )}
         </div>
       </div>
 
-      {open && (
+      {skriptOpen && (
         <pre className="mt-3 text-xs text-gray-700 bg-gray-50 rounded-lg p-3 whitespace-pre-wrap font-sans border border-gray-100">
           {skript.replace('[Name]', kunde.vorname)}
         </pre>
+      )}
+
+      {erledigtFormOpen && (
+        <AufgabeErledigtForm
+          onBestaetigen={onBestaetigen}
+          onErledigt={onErledigt}
+          onAbbrechen={() => setErledigtFormOpen(false)}
+          customerId={kunde.id}
+        />
       )}
     </div>
   );

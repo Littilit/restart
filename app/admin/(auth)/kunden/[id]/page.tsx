@@ -6,6 +6,8 @@ import StatusEditor from './StatusEditor';
 import TagsEditor from './TagsEditor';
 import NotizenEditor from './NotizenEditor';
 import ErstTerminEditor from './ErstTerminEditor';
+import KundenAufgaben from './KundenAufgaben';
+import KundenZusammenfuehren from './KundenZusammenfuehren';
 import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
 import { DETAIL_FRAGEN } from '@/features/anamnese/fragen';
 import type { Kontraindikation, MainFocus } from '@/features/anamnese/types';
@@ -45,6 +47,7 @@ export default async function KundeDetail({ params, searchParams }: Props) {
         anamnesen: { orderBy: { createdAt: 'desc' }, take: 5 },
         empfehlungen: { orderBy: { createdAt: 'desc' } },
         notizen: { orderBy: { createdAt: 'desc' } },
+        tasks: { orderBy: { createdAt: 'desc' } },
       },
     }),
     prisma.customer.findMany({ select: { tags: true } }),
@@ -106,19 +109,32 @@ export default async function KundeDetail({ params, searchParams }: Props) {
             <h2 className="text-sm font-semibold text-gray-700 mb-4">Stammdaten</h2>
             <dl className="space-y-2 text-sm">
               <Row label="Name" value={`${customer.vorname} ${customer.nachname}`} />
-              <Row label="E-Mail" value={customer.email} />
+              <div className="flex gap-2 text-sm">
+                <dt className="w-44 shrink-0 text-gray-500">E-Mail</dt>
+                <dd className="space-y-0.5">
+                  <span className="text-gray-800">{customer.email}</span>
+                  {customer.alternativeEmails.map((e) => (
+                    <div key={e} className="text-xs text-gray-400">(auch: {e})</div>
+                  ))}
+                </dd>
+              </div>
               <div className="flex gap-2 text-sm">
                 <dt className="w-44 shrink-0 text-gray-500">Telefon</dt>
-                <dd className="flex items-center gap-2">
-                  <span className="text-gray-800">{customer.telefon}</span>
-                  <a
-                    href={waUrl(customer.telefon)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs px-1.5 py-0.5 rounded bg-[#25d366] text-white hover:opacity-90 transition-opacity"
-                  >
-                    WhatsApp
-                  </a>
+                <dd className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-800">{customer.telefon}</span>
+                    <a
+                      href={waUrl(customer.telefon)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs px-1.5 py-0.5 rounded bg-[#25d366] text-white hover:opacity-90 transition-opacity"
+                    >
+                      WhatsApp
+                    </a>
+                  </div>
+                  {customer.alternativeTelefone.map((t) => (
+                    <div key={t} className="text-xs text-gray-400">(auch: {t})</div>
+                  ))}
                 </dd>
               </div>
               {customer.geburtsdatum && <Row label="Geburtsdatum" value={customer.geburtsdatum} />}
@@ -136,6 +152,11 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                 <dd><ErstTerminEditor customerId={customer.id} erstTermin={customer.erstTermin} /></dd>
               </div>
             </dl>
+            <KundenZusammenfuehren
+              keepId={customer.id}
+              keepName={`${customer.vorname} ${customer.nachname}`}
+              keepEmail={customer.email}
+            />
           </div>
 
           {/* Status & Tags */}
@@ -150,6 +171,9 @@ export default async function KundeDetail({ params, searchParams }: Props) {
               <TagsEditor customerId={customer.id} initial={customer.tags} allTags={allTags} />
             </div>
           </div>
+
+          {/* Aufgaben */}
+          <KundenAufgaben tasks={customer.tasks} customerId={customer.id} />
 
           {/* Letzte Anamnese */}
           {latestAnamnese && (

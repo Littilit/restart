@@ -34,8 +34,12 @@ export default async function AdminDashboard({ searchParams }: Props) {
     ? (status as CustomerStatus)
     : undefined;
 
+  const jetzt = new Date();
   const offeneAufgaben = await prisma.task.findMany({
-    where: { erledigtAm: null },
+    where: {
+      erledigtAm: null,
+      OR: [{ faelligAm: null }, { faelligAm: { lte: jetzt } }],
+    },
     include: {
       customer: { select: { id: true, vorname: true, nachname: true, telefon: true } },
     },
@@ -64,6 +68,8 @@ export default async function AdminDashboard({ searchParams }: Props) {
               { nachname: { contains: q, mode: 'insensitive' } },
               { email: { contains: q, mode: 'insensitive' } },
               { telefon: { contains: q } },
+              { alternativeEmails: { has: q } },
+              { alternativeTelefone: { has: q } },
             ],
           }
         : {}),

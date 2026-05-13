@@ -51,9 +51,11 @@ model Customer {
   tags             String[]       @default([])
   consentMarketing  Boolean        @default(false)
   herkunft          String         @default("")
-  erstTermin        DateTime?
-  servicegesprachAm DateTime?
-  anamnesen         Anamnese[]
+  erstTermin          DateTime?
+  servicegesprachAm   DateTime?
+  alternativeEmails   String[]  @default([])
+  alternativeTelefone String[]  @default([])
+  anamnesen           Anamnese[]
   empfehlungen      Empfehlung[]
   notizen           Note[]
   tasks             Task[]
@@ -107,13 +109,16 @@ model Note {
 }
 
 model Task {
-  id         String    @id @default(cuid())
-  anweisung  String    @db.Text
-  skript     String?   @db.Text
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  erledigtAm DateTime?
-  createdAt  DateTime  @default(now())
+  id               String    @id @default(cuid())
+  anweisung        String    @db.Text
+  skript           String?   @db.Text
+  customerId       String?
+  customer         Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  erledigtAm       DateTime?
+  erledigungsTyp   String?
+  erledigungsNotiz String?   @db.Text
+  faelligAm        DateTime?
+  createdAt        DateTime  @default(now())
 
   @@index([erledigtAm])
   @@index([customerId])
