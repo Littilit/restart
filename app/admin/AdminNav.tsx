@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { Users, Tag, UserPlus, ClipboardList } from 'lucide-react';
+import { Users, Tag, UserPlus, ClipboardList, Calendar } from 'lucide-react';
 
 export default function AdminNav({ tags }: { tags: string[] }) {
   const pathname = usePathname();
@@ -14,6 +14,7 @@ export default function AdminNav({ tags }: { tags: string[] }) {
   const kundenActive = (pathname === '/admin' || pathname.startsWith('/admin/kunden')) && !activeTag && !pathname.startsWith('/admin/kunden/neu');
   const kundeNeuActive = pathname.startsWith('/admin/kunden/neu');
   const aufgabeActive = pathname.startsWith('/admin/aufgaben');
+  const kalenderActive = pathname.startsWith('/admin/kalender');
 
   async function logout() {
     await fetch('/api/admin/logout', { method: 'POST' });
@@ -65,6 +66,19 @@ export default function AdminNav({ tags }: { tags: string[] }) {
           >
             <ClipboardList size={16} />
             Aufgabe erstellen
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/admin/kalender"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              kalenderActive
+                ? 'bg-cp-tuerkis text-white'
+                : 'text-white/60 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Calendar size={16} />
+            Kalender
           </Link>
         </li>
 

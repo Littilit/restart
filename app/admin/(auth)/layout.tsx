@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import AdminNav from '../AdminNav';
+import ShoreFrame from '../ShoreFrame';
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const authed = await getSession();
@@ -22,6 +23,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <main className="flex-1 p-6 lg:p-8 overflow-auto">
         {children}
       </main>
+      <ShoreFrame shoreUrl={process.env.SHORE_CALENDAR_URL ?? null} />
     </div>
   );
 }
