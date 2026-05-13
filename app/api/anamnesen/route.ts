@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { samePersonByName } from '@/lib/name-similarity';
 import type { Prisma } from '@prisma/client';
 
 const schema = z.object({
@@ -22,7 +23,7 @@ const schema = z.object({
   consentDsgvo: z.boolean(),
   consentGesundheitsdaten: z.boolean(),
   consentMarketing: z.boolean().optional().default(false),
-  signatureDataUrl: z.string().nullable().optional(),
+  signatureDataUrl: z.string().max(500_000).nullable().optional(),
   herkunft: z.string().optional().default(''),
   userAgent: z.string().optional().default(''),
 });
@@ -47,28 +48,34 @@ export async function POST(request: Request) {
   }
 
   try {
-    const customer = await prisma.customer.upsert({
-      where: { email: d.email },
-      update: {
-        vorname: d.vorname,
-        nachname: d.nachname,
-        telefon: d.telefon,
-        geburtsdatum: d.geburtsdatum,
-        adresse: d.adresse,
-        consentMarketing: d.consentMarketing,
-        herkunft: d.herkunft || undefined,
-      },
-      create: {
-        vorname: d.vorname,
-        nachname: d.nachname,
-        email: d.email,
-        telefon: d.telefon,
-        geburtsdatum: d.geburtsdatum,
-        adresse: d.adresse,
-        consentMarketing: d.consentMarketing,
-        herkunft: d.herkunft,
-      },
-    });
+    const existing = await prisma.customer.findMany({ where: { email: d.email } });
+    const match = existing.find((c) => samePersonByName(c.vorname, d.vorname));
+
+    const customer = match
+      ? await prisma.customer.update({
+          where: { id: match.id },
+          data: {
+            vorname: d.vorname,
+            nachname: d.nachname,
+            telefon: d.telefon,
+            geburtsdatum: d.geburtsdatum,
+            adresse: d.adresse,
+            consentMarketing: d.consentMarketing,
+            herkunft: d.herkunft || undefined,
+          },
+        })
+      : await prisma.customer.create({
+          data: {
+            vorname: d.vorname,
+            nachname: d.nachname,
+            email: d.email,
+            telefon: d.telefon,
+            geburtsdatum: d.geburtsdatum,
+            adresse: d.adresse,
+            consentMarketing: d.consentMarketing,
+            herkunft: d.herkunft,
+          },
+        });
 
     const anamnese = await prisma.anamnese.create({
       data: {

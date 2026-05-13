@@ -1,58 +1,63 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import type { CustomerStatus } from '@prisma/client';
 
-const VALID_STATUS: CustomerStatus[] = [
-  'neukunde', 'startangebot', 'mitglied', 'karten_kunde', 'aggregator', 'angebot_nachfassen',
-];
+
+const patchSchema = z.object({
+  status: z.enum(['neukunde', 'startangebot', 'mitglied', 'karten_kunde', 'aggregator', 'angebot_nachfassen', 'kein_kauf']).optional(),
+  tags: z.array(z.string()).optional(),
+  erstTermin: z.string().datetime().nullable().optional(),
+  servicegesprachErledigt: z.boolean().optional(),
+});
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_: Request, { params }: Params) {
-  const { id } = await params;
-  const customer = await prisma.customer.findUnique({
-    where: { id },
-    include: {
-      anamnesen: { orderBy: { createdAt: 'desc' } },
-      empfehlungen: { orderBy: { createdAt: 'desc' } },
-      notizen: { orderBy: { createdAt: 'desc' } },
-    },
-  });
-  if (!customer) return NextResponse.json({ error: 'Nicht gefunden' }, { status: 404 });
-  return NextResponse.json(customer);
+  try {
+    const { id } = await params;
+    const customer = await prisma.customer.findUnique({
+      where: { id },
+      include: {
+        anamnesen: { orderBy: { createdAt: 'desc' } },
+        empfehlungen: { orderBy: { createdAt: 'desc' } },
+        notizen: { orderBy: { createdAt: 'desc' } },
+      },
+    });
+    if (!customer) return NextResponse.json({ error: 'Nicht gefunden' }, { status: 404 });
+    return NextResponse.json(customer);
+  } catch (err) {
+    console.error('[GET /api/admin/customers/[id]]', err);
+    return NextResponse.json({ error: 'Datenbankfehler' }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request, { params }: Params) {
-  const { id } = await params;
-  const body = await request.json() as {
-    status?: string;
-    tags?: unknown;
-    erstTermin?: string | null;
-    servicegesprachErledigt?: boolean;
-  };
+  try {
+    const { id } = await params;
+    const parsed = patchSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Ungültige Eingabe', details: parsed.error.flatten() }, { status: 400 });
+    }
+    const body = parsed.data;
 
-  const data: {
-    status?: CustomerStatus;
-    tags?: string[];
-    erstTermin?: Date | null;
-    servicegesprachAm?: Date | null;
-  } = {};
+    const data: {
+      status?: CustomerStatus;
+      tags?: string[];
+      erstTermin?: Date | null;
+      servicegesprachAm?: Date | null;
+    } = {};
 
-  if (typeof body.status === 'string' && VALID_STATUS.includes(body.status as CustomerStatus)) {
-    data.status = body.status as CustomerStatus;
-  }
-  if (Array.isArray(body.tags)) {
-    data.tags = body.tags.filter((t): t is string => typeof t === 'string');
-  }
-  if ('erstTermin' in body) {
-    data.erstTermin = body.erstTermin ? new Date(body.erstTermin) : null;
-  }
-  if (body.servicegesprachErledigt === true) {
-    data.servicegesprachAm = new Date();
-  } else if (body.servicegesprachErledigt === false) {
-    data.servicegesprachAm = null;
-  }
+    if (body.status !== undefined) data.status = body.status;
+    if (body.tags !== undefined) data.tags = body.tags;
+    if ('erstTermin' in body) data.erstTermin = body.erstTermin ? new Date(body.erstTermin) : null;
+    if (body.servicegesprachErledigt === true) data.servicegesprachAm = new Date();
+    else if (body.servicegesprachErledigt === false) data.servicegesprachAm = null;
 
-  const customer = await prisma.customer.update({ where: { id }, data });
-  return NextResponse.json(customer);
+    const customer = await prisma.customer.update({ where: { id }, data });
+    return NextResponse.json(customer);
+  } catch (err) {
+    console.error('[PATCH /api/admin/customers/[id]]', err);
+    return NextResponse.json({ error: 'Datenbankfehler' }, { status: 500 });
+  }
 }

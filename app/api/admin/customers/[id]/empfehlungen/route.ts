@@ -1,89 +1,59 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { PREISE, SLUG_KATEGORIE } from '@/data/preise';
-import type { AnwendungSlug } from '@/data/anwendungen';
-import type { EmpfehlungTyp } from '@prisma/client';
 
-const VALID_TYP: EmpfehlungTyp[] = ['neukunde', 'folge', 'experte'];
+const VALID_SLUGS = ['eisbox', 'redlight', 'infrarotsauna', 'boa-lymphmassage', 'armstrong', 'beckenbodenstuhl', 'cryoshaper'] as const;
 
-const VALID_SLUGS: AnwendungSlug[] = [
-  'eisbox', 'redlight', 'infrarotsauna', 'boa-lymphmassage',
-  'armstrong', 'beckenbodenstuhl', 'cryoshaper',
-];
-
-interface AnwendungInput {
-  slug: AnwendungSlug;
-  haeufigkeitText: string;
-  begruendung: string;
-}
+const postSchema = z.object({
+  typ: z.enum(['neukunde', 'folge', 'experte']),
+  anwendungen: z.array(z.object({
+    slug: z.enum(VALID_SLUGS),
+    haeufigkeitText: z.string(),
+    begruendung: z.string(),
+  })).min(1),
+  einleitung: z.string().optional(),
+  zusatzhinweis: z.string().optional(),
+});
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: Params) {
-  const { id } = await params;
-  const body = await request.json() as {
-    typ?: string;
-    anwendungen?: unknown;
-    einleitung?: string;
-    zusatzhinweis?: string;
-  };
+  try {
+    const { id } = await params;
 
-  if (typeof body.typ !== 'string' || !VALID_TYP.includes(body.typ as EmpfehlungTyp)) {
-    return NextResponse.json({ error: 'Ungültiger Typ' }, { status: 400 });
-  }
-
-  if (!Array.isArray(body.anwendungen) || body.anwendungen.length === 0) {
-    return NextResponse.json({ error: 'Mindestens eine Anwendung erforderlich' }, { status: 400 });
-  }
-
-  const anwendungen: AnwendungInput[] = [];
-  for (const raw of body.anwendungen) {
-    if (!raw || typeof raw !== 'object') {
-      return NextResponse.json({ error: 'Ungültige Anwendung' }, { status: 400 });
+    const parsed = postSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Ungültige Eingabe', details: parsed.error.flatten() }, { status: 400 });
     }
-    const a = raw as Record<string, unknown>;
-    if (
-      typeof a.slug !== 'string' ||
-      !VALID_SLUGS.includes(a.slug as AnwendungSlug) ||
-      typeof a.haeufigkeitText !== 'string' ||
-      typeof a.begruendung !== 'string'
-    ) {
-      return NextResponse.json({ error: 'Ungültige Anwendung' }, { status: 400 });
+    const { typ, anwendungen, einleitung, zusatzhinweis } = parsed.data;
+
+    const customer = await prisma.customer.findUnique({ where: { id } });
+    if (!customer) {
+      return NextResponse.json({ error: 'Kunde nicht gefunden' }, { status: 404 });
     }
-    anwendungen.push({
-      slug: a.slug as AnwendungSlug,
-      haeufigkeitText: a.haeufigkeitText,
-      begruendung: a.begruendung,
+
+    const usedKategorien = new Set(anwendungen.map((a) => SLUG_KATEGORIE[a.slug]));
+    const preisSnapshotRaw: Record<string, unknown> = {};
+    for (const kat of usedKategorien) {
+      preisSnapshotRaw[kat] = PREISE[kat];
+    }
+
+    const empfehlung = await prisma.empfehlung.create({
+      data: {
+        customerId: id,
+        typ,
+        anwendungen: anwendungen as Prisma.InputJsonValue,
+        einleitung: einleitung?.trim() || null,
+        zusatzhinweis: zusatzhinweis?.trim() || null,
+        preisSnapshot: preisSnapshotRaw as Prisma.InputJsonValue,
+      },
     });
+
+    return NextResponse.json({ id: empfehlung.id, shareToken: empfehlung.shareToken });
+  } catch (err) {
+    console.error('[POST /api/admin/customers/[id]/empfehlungen]', err);
+    return NextResponse.json({ error: 'Datenbankfehler' }, { status: 500 });
   }
-
-  const customer = await prisma.customer.findUnique({ where: { id } });
-  if (!customer) {
-    return NextResponse.json({ error: 'Kunde nicht gefunden' }, { status: 404 });
-  }
-
-  const usedKategorien = new Set(anwendungen.map((a) => SLUG_KATEGORIE[a.slug]));
-  const preisSnapshotRaw: Record<string, unknown> = {};
-  for (const kat of usedKategorien) {
-    preisSnapshotRaw[kat] = PREISE[kat];
-  }
-  const preisSnapshot = preisSnapshotRaw as Prisma.InputJsonValue;
-
-  const empfehlung = await prisma.empfehlung.create({
-    data: {
-      customerId: id,
-      typ: body.typ as EmpfehlungTyp,
-      anwendungen: anwendungen as unknown as Prisma.InputJsonValue,
-      einleitung: typeof body.einleitung === 'string' && body.einleitung.trim() !== ''
-        ? body.einleitung
-        : null,
-      zusatzhinweis: typeof body.zusatzhinweis === 'string' && body.zusatzhinweis.trim() !== ''
-        ? body.zusatzhinweis
-        : null,
-      preisSnapshot,
-    },
-  });
-
-  return NextResponse.json({ id: empfehlung.id, shareToken: empfehlung.shareToken });
 }
