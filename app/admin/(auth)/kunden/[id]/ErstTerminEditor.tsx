@@ -22,7 +22,7 @@ export default function ErstTerminEditor({
     await fetch(`/api/admin/customers/${customerId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ erstTermin: value || null }),
+      body: JSON.stringify({ erstTermin: value ? new Date(value).toISOString() : null }),
     });
     setEditing(false);
     startTransition(() => router.refresh());
