@@ -173,7 +173,7 @@ export default async function KundeDetail({ params, searchParams }: Props) {
           </div>
 
           {/* Aufgaben */}
-          <KundenAufgaben tasks={customer.tasks} />
+          <KundenAufgaben tasks={customer.tasks} customerId={customer.id} />
 
           {/* Letzte Anamnese */}
           {latestAnamnese && (

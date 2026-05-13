@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import AufgabeErledigtForm from '@/admin/AufgabeErledigtForm';
+import AufgabeErledigtForm, { type ErledigungData } from '@/admin/AufgabeErledigtForm';
 
 interface Task {
   id: string;
@@ -16,15 +16,24 @@ interface Task {
 const ERLEDIGT_LABEL: Record<string, string> = {
   termin_vereinbart: 'Termin vereinbart',
   feedback_eingeholt: 'Feedback eingeholt',
+  neuer_termin: 'Auf neuen Termin verlegt',
 };
 
-function AufgabeKarte({ task }: { task: Task }) {
+function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) {
   const router = useRouter();
   const [skriptOpen, setSkriptOpen] = useState(false);
   const [erledigtFormOpen, setErledigtFormOpen] = useState(false);
   const [, startTransition] = useTransition();
 
   const erledigt = !!task.erledigtAm;
+
+  async function onBestaetigen(data: ErledigungData) {
+    await fetch(`/api/admin/tasks/${task.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
 
   function onErledigt() {
     setErledigtFormOpen(false);
@@ -78,16 +87,17 @@ function AufgabeKarte({ task }: { task: Task }) {
 
       {erledigtFormOpen && (
         <AufgabeErledigtForm
-          taskId={task.id}
+          onBestaetigen={onBestaetigen}
           onErledigt={onErledigt}
           onAbbrechen={() => setErledigtFormOpen(false)}
+          customerId={customerId}
         />
       )}
     </div>
   );
 }
 
-export default function KundenAufgaben({ tasks }: { tasks: Task[] }) {
+export default function KundenAufgaben({ tasks, customerId }: { tasks: Task[]; customerId: string }) {
   if (tasks.length === 0) return null;
 
   const offen = tasks.filter((t) => !t.erledigtAm);
@@ -104,8 +114,8 @@ export default function KundenAufgaben({ tasks }: { tasks: Task[] }) {
         )}
       </h2>
       <div className="space-y-2">
-        {offen.map((t) => <AufgabeKarte key={t.id} task={t} />)}
-        {erledigt.map((t) => <AufgabeKarte key={t.id} task={t} />)}
+        {offen.map((t) => <AufgabeKarte key={t.id} task={t} customerId={customerId} />)}
+        {erledigt.map((t) => <AufgabeKarte key={t.id} task={t} customerId={customerId} />)}
       </div>
     </div>
   );

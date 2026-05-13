@@ -6,6 +6,7 @@ const createSchema = z.object({
   anweisung:  z.string().min(1),
   skript:     z.string().optional(),
   customerId: z.string().optional(),
+  faelligAm:  z.string().datetime().optional(),
 });
 
 export async function POST(request: Request) {
@@ -25,7 +26,11 @@ export async function POST(request: Request) {
     }
 
     const task = await prisma.task.create({
-      data: { ...rest, customerId: customerId ?? null },
+      data: {
+        ...rest,
+        customerId: customerId ?? null,
+        faelligAm: rest.faelligAm ? new Date(rest.faelligAm) : null,
+      },
     });
 
     return NextResponse.json({ id: task.id }, { status: 201 });

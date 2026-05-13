@@ -117,6 +117,7 @@ model Task {
   erledigtAm       DateTime?
   erledigungsTyp   String?
   erledigungsNotiz String?   @db.Text
+  faelligAm        DateTime?
   createdAt        DateTime  @default(now())
 
   @@index([erledigtAm])

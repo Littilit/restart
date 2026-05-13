@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import AufgabeErledigtForm from './AufgabeErledigtForm';
+import AufgabeErledigtForm, { type ErledigungData } from './AufgabeErledigtForm';
 
 export interface AdminTask {
   id: string;
@@ -23,6 +23,14 @@ function AufgabeKarte({ task }: { task: AdminTask }) {
   const [skriptOpen, setSkriptOpen] = useState(false);
   const [erledigtFormOpen, setErledigtFormOpen] = useState(false);
   const [, startTransition] = useTransition();
+
+  async function onBestaetigen(data: ErledigungData) {
+    await fetch(`/api/admin/tasks/${task.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
 
   function onErledigt() {
     setErledigtFormOpen(false);
@@ -77,9 +85,10 @@ function AufgabeKarte({ task }: { task: AdminTask }) {
 
       {erledigtFormOpen && (
         <AufgabeErledigtForm
-          taskId={task.id}
+          onBestaetigen={onBestaetigen}
           onErledigt={onErledigt}
           onAbbrechen={() => setErledigtFormOpen(false)}
+          customerId={task.customer?.id}
         />
       )}
     </div>

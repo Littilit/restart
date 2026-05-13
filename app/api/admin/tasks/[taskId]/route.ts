@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 
 const patchSchema = z.object({
-  erledigungsTyp: z.enum(['termin_vereinbart', 'feedback_eingeholt']),
+  erledigungsTyp: z.enum(['termin_vereinbart', 'feedback_eingeholt', 'neuer_termin']),
   notiz: z.string().optional(),
 });
 
