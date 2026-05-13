@@ -12,8 +12,6 @@ const schema = z.object({
   nachname:         z.string().min(2, 'Mindestens 2 Zeichen'),
   email:            z.string().email('Ungültige E-Mail-Adresse'),
   telefon:          z.string().min(6, 'Mindestens 6 Zeichen'),
-  geburtsdatum:     z.string().min(1, 'Pflichtfeld'),
-  adresse:          z.string().min(3, 'Mindestens 3 Zeichen'),
   herkunft:         z.string().optional(),
   consentMarketing: z.boolean().optional(),
 });
@@ -73,20 +71,6 @@ export default function KundeNeuForm() {
         type="tel"
         error={errors.telefon?.message}
         {...register('telefon')}
-      />
-
-      <Input
-        label="Geburtsdatum"
-        type="date"
-        error={errors.geburtsdatum?.message}
-        {...register('geburtsdatum')}
-      />
-
-      <Input
-        label="Adresse"
-        placeholder="Straße, PLZ, Stadt"
-        error={errors.adresse?.message}
-        {...register('adresse')}
       />
 
       <Input

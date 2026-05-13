@@ -43,10 +43,10 @@ model Customer {
   id               String         @id @default(cuid())
   vorname          String
   nachname         String
-  email            String         @unique
+  email            String
   telefon          String
-  geburtsdatum     String
-  adresse          String
+  geburtsdatum     String         @default("")
+  adresse          String         @default("")
   status           CustomerStatus @default(neukunde)
   tags             String[]       @default([])
   consentMarketing  Boolean        @default(false)
@@ -60,6 +60,7 @@ model Customer {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
+  @@index([email])
   @@index([createdAt])
 }
 

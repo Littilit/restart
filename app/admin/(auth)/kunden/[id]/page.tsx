@@ -7,7 +7,9 @@ import TagsEditor from './TagsEditor';
 import NotizenEditor from './NotizenEditor';
 import ErstTerminEditor from './ErstTerminEditor';
 import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
-import type { Kontraindikation } from '@/features/anamnese/types';
+import { DETAIL_FRAGEN } from '@/features/anamnese/fragen';
+import type { Kontraindikation, MainFocus } from '@/features/anamnese/types';
+import type { Frage } from '@/features/anamnese/fragen';
 
 type Tab = 'uebersicht' | 'empfehlungen' | 'notizen';
 
@@ -119,8 +121,8 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                   </a>
                 </dd>
               </div>
-              <Row label="Geburtsdatum" value={customer.geburtsdatum} />
-              <Row label="Adresse" value={customer.adresse} />
+              {customer.geburtsdatum && <Row label="Geburtsdatum" value={customer.geburtsdatum} />}
+              {customer.adresse && <Row label="Adresse" value={customer.adresse} />}
               {customer.herkunft && <Row label="Herkunft" value={customer.herkunft} />}
               <Row
                 label="Kunde seit"
@@ -167,8 +169,20 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                 {latestAnamnese.mainFocus && (
                   <Row label="Hauptfokus" value={latestAnamnese.mainFocus} />
                 )}
+                {latestAnamnese.mainFocus && (
+                  <ChamberDetails
+                    mainFocus={latestAnamnese.mainFocus}
+                    chamber={latestAnamnese.chamber2 as Record<string, string>}
+                  />
+                )}
                 {latestAnamnese.mainFocus2 && (
                   <Row label="2. Fokus" value={latestAnamnese.mainFocus2} />
+                )}
+                {latestAnamnese.mainFocus2 && (
+                  <ChamberDetails
+                    mainFocus={latestAnamnese.mainFocus2}
+                    chamber={latestAnamnese.chamber2b as Record<string, string>}
+                  />
                 )}
                 <div className="flex gap-2 text-sm">
                   <dt className="w-44 shrink-0 text-gray-500">Kontraindikationen</dt>
@@ -308,5 +322,24 @@ function Row({ label, value }: { label: string; value: string }) {
       <dt className="w-44 shrink-0 text-gray-500">{label}</dt>
       <dd className="text-gray-800">{value}</dd>
     </div>
+  );
+}
+
+function resolveChamberwert(frage: Frage, value: string): string {
+  if (frage.type === 'freetext') return value;
+  const ids = value.split(',').filter(Boolean);
+  return ids.map((id) => frage.options.find((o) => o.id === id)?.label ?? id).join(', ');
+}
+
+function ChamberDetails({ mainFocus, chamber }: { mainFocus: string; chamber: Record<string, string> }) {
+  const fragen = DETAIL_FRAGEN[mainFocus as MainFocus] ?? [];
+  const rows = fragen.filter((f) => chamber[f.id]);
+  if (rows.length === 0) return null;
+  return (
+    <>
+      {rows.map((f) => (
+        <Row key={f.id} label={f.frage} value={resolveChamberwert(f, chamber[f.id])} />
+      ))}
+    </>
   );
 }
