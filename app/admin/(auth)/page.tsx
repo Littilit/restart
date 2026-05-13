@@ -64,6 +64,8 @@ export default async function AdminDashboard({ searchParams }: Props) {
               { nachname: { contains: q, mode: 'insensitive' } },
               { email: { contains: q, mode: 'insensitive' } },
               { telefon: { contains: q } },
+              { alternativeEmails: { has: q } },
+              { alternativeTelefone: { has: q } },
             ],
           }
         : {}),

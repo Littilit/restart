@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import AufgabeErledigtForm from './AufgabeErledigtForm';
 
 export interface AdminTask {
   id: string;
@@ -19,11 +20,12 @@ export interface AdminTask {
 
 function AufgabeKarte({ task }: { task: AdminTask }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [pending, startTransition] = useTransition();
+  const [skriptOpen, setSkriptOpen] = useState(false);
+  const [erledigtFormOpen, setErledigtFormOpen] = useState(false);
+  const [, startTransition] = useTransition();
 
-  async function erledigen() {
-    await fetch(`/api/admin/tasks/${task.id}`, { method: 'PATCH' });
+  function onErledigt() {
+    setErledigtFormOpen(false);
     startTransition(() => router.refresh());
   }
 
@@ -50,26 +52,35 @@ function AufgabeKarte({ task }: { task: AdminTask }) {
         <div className="flex items-center gap-2 shrink-0">
           {task.skript && (
             <button
-              onClick={() => setOpen((v) => !v)}
+              onClick={() => setSkriptOpen((v) => !v)}
               className="text-xs text-gray-500 hover:text-cp-blau transition-colors underline"
             >
-              {open ? 'Skript schließen' : 'Telefonskript'}
+              {skriptOpen ? 'Skript schließen' : 'Telefonskript'}
             </button>
           )}
-          <button
-            onClick={erledigen}
-            disabled={pending}
-            className="text-xs px-2.5 py-1 rounded-lg bg-cp-tuerkis text-white hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            Erledigt
-          </button>
+          {!erledigtFormOpen && (
+            <button
+              onClick={() => setErledigtFormOpen(true)}
+              className="text-xs px-2.5 py-1 rounded-lg bg-cp-tuerkis text-white hover:opacity-90 transition-opacity"
+            >
+              Erledigt
+            </button>
+          )}
         </div>
       </div>
 
-      {open && task.skript && (
+      {skriptOpen && task.skript && (
         <pre className="mt-3 text-xs text-gray-700 bg-gray-50 rounded-lg p-3 whitespace-pre-wrap font-sans border border-gray-100">
           {task.skript}
         </pre>
+      )}
+
+      {erledigtFormOpen && (
+        <AufgabeErledigtForm
+          taskId={task.id}
+          onErledigt={onErledigt}
+          onAbbrechen={() => setErledigtFormOpen(false)}
+        />
       )}
     </div>
   );

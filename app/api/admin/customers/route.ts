@@ -3,6 +3,27 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { samePersonByName } from '@/lib/name-similarity';
 
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const q = searchParams.get('q')?.trim() ?? '';
+  if (q.length < 2) return NextResponse.json([]);
+
+  const customers = await prisma.customer.findMany({
+    where: {
+      OR: [
+        { vorname: { contains: q, mode: 'insensitive' } },
+        { nachname: { contains: q, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+        { telefon: { contains: q } },
+      ],
+    },
+    select: { id: true, vorname: true, nachname: true, email: true, telefon: true },
+    take: 10,
+    orderBy: { createdAt: 'desc' },
+  });
+  return NextResponse.json(customers);
+}
+
 const createSchema = z.object({
   vorname:          z.string().min(2),
   nachname:         z.string().min(2),
