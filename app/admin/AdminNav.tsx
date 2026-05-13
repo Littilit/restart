@@ -3,9 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { Users, Tag, UserPlus, ClipboardList, Calendar } from 'lucide-react';
+import { Users, Tag, UserPlus, ClipboardList } from 'lucide-react';
 
-export default function AdminNav({ tags, shoreUrl }: { tags: string[]; shoreUrl: string | null }) {
+export default function AdminNav({ tags }: { tags: string[] }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -67,19 +67,6 @@ export default function AdminNav({ tags, shoreUrl }: { tags: string[]; shoreUrl:
             Aufgabe erstellen
           </Link>
         </li>
-        {shoreUrl && (
-          <li>
-            <a
-              href={shoreUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <Calendar size={16} />
-              Kalender
-            </a>
-          </li>
-        )}
 
         {tags.length > 0 && (
           <li>
