@@ -2,10 +2,15 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 
-const patchSchema = z.object({
-  erledigungsTyp: z.enum(['termin_vereinbart', 'feedback_eingeholt', 'neuer_termin']),
-  notiz: z.string().optional(),
-});
+const patchSchema = z.union([
+  z.object({
+    erledigungsTyp: z.enum(['termin_vereinbart', 'feedback_eingeholt', 'neuer_termin']),
+    notiz: z.string().optional(),
+  }),
+  z.object({
+    verschiebenAuf: z.string().datetime(),
+  }),
+]);
 
 type Params = { params: Promise<{ taskId: string }> };
 
@@ -16,11 +21,19 @@ export async function PATCH(req: Request, { params }: Params) {
     if (!parsed.success) {
       return NextResponse.json({ error: 'Ungültige Eingabe' }, { status: 400 });
     }
-    const { erledigungsTyp, notiz } = parsed.data;
 
     const task = await prisma.task.findUnique({ where: { id: taskId }, select: { customerId: true } });
     if (!task) return NextResponse.json({ error: 'Nicht gefunden' }, { status: 404 });
 
+    if ('verschiebenAuf' in parsed.data) {
+      await prisma.task.update({
+        where: { id: taskId },
+        data: { faelligAm: new Date(parsed.data.verschiebenAuf) },
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    const { erledigungsTyp, notiz } = parsed.data;
     const notizTrimmed = notiz?.trim();
 
     if (notizTrimmed && task.customerId) {

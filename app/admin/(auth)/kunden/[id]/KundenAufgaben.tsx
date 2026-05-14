@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import AufgabeErledigtForm, { type ErledigungData } from '@/admin/AufgabeErledigtForm';
 
 interface Task {
@@ -21,7 +20,6 @@ const ERLEDIGT_LABEL: Record<string, string> = {
 };
 
 function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) {
-  const router = useRouter();
   const [skriptOpen, setSkriptOpen] = useState(false);
   const [erledigtFormOpen, setErledigtFormOpen] = useState(false);
 
@@ -35,9 +33,17 @@ function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) 
     });
   }
 
+  async function onVerschieben(faelligAm: string) {
+    await fetch(`/api/admin/tasks/${task.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ verschiebenAuf: new Date(faelligAm).toISOString() }),
+    });
+  }
+
   function onErledigt() {
     setErledigtFormOpen(false);
-    router.refresh();
+    window.location.reload();
   }
 
   return (
@@ -49,6 +55,11 @@ function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) 
             <p className={`text-sm ${erledigt ? 'text-gray-400 line-through' : 'text-cp-blau'}`}>
               {task.anweisung}
             </p>
+            {!erledigt && task.faelligAm && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                Fällig am {new Date(task.faelligAm).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              </p>
+            )}
             {erledigt && task.erledigungsTyp && (
               <p className="text-xs text-gray-400 mt-0.5">
                 {ERLEDIGT_LABEL[task.erledigungsTyp] ?? task.erledigungsTyp}
@@ -88,6 +99,7 @@ function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) 
       {erledigtFormOpen && (
         <AufgabeErledigtForm
           onBestaetigen={onBestaetigen}
+          onVerschieben={onVerschieben}
           onErledigt={onErledigt}
           onAbbrechen={() => setErledigtFormOpen(false)}
           customerId={customerId}
