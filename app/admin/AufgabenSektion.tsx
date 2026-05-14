@@ -26,7 +26,7 @@ function AufgabeKarte({ task }: { task: AdminTask }) {
     await fetch(`/api/admin/tasks/${task.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ erledigungsTyp: data.typ, notiz: data.notiz }),
     });
   }
 

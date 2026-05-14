@@ -29,7 +29,7 @@ function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) 
     await fetch(`/api/admin/tasks/${task.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ erledigungsTyp: data.typ, notiz: data.notiz }),
     });
   }
 
