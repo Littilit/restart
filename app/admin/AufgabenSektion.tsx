@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
 import AufgabeErledigtForm, { type ErledigungData } from './AufgabeErledigtForm';
 
@@ -9,6 +8,7 @@ export interface AdminTask {
   id: string;
   anweisung: string;
   skript: string | null;
+  faelligAm: Date | null;
   createdAt: Date;
   customer: {
     id: string;
@@ -19,22 +19,28 @@ export interface AdminTask {
 }
 
 function AufgabeKarte({ task }: { task: AdminTask }) {
-  const router = useRouter();
   const [skriptOpen, setSkriptOpen] = useState(false);
   const [erledigtFormOpen, setErledigtFormOpen] = useState(false);
-  const [, startTransition] = useTransition();
 
   async function onBestaetigen(data: ErledigungData) {
     await fetch(`/api/admin/tasks/${task.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ erledigungsTyp: data.typ, notiz: data.notiz }),
+    });
+  }
+
+  async function onVerschieben(faelligAm: string) {
+    await fetch(`/api/admin/tasks/${task.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ verschiebenAuf: new Date(faelligAm).toISOString() }),
     });
   }
 
   function onErledigt() {
     setErledigtFormOpen(false);
-    startTransition(() => router.refresh());
+    window.location.reload();
   }
 
   return (
@@ -44,6 +50,11 @@ function AufgabeKarte({ task }: { task: AdminTask }) {
           <div className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-1.5" />
           <div className="min-w-0">
             <p className="text-sm text-cp-blau">{task.anweisung}</p>
+            {task.faelligAm && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                Fällig am {new Date(task.faelligAm).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              </p>
+            )}
             {task.customer && (
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 <Link
@@ -86,6 +97,7 @@ function AufgabeKarte({ task }: { task: AdminTask }) {
       {erledigtFormOpen && (
         <AufgabeErledigtForm
           onBestaetigen={onBestaetigen}
+          onVerschieben={onVerschieben}
           onErledigt={onErledigt}
           onAbbrechen={() => setErledigtFormOpen(false)}
           customerId={task.customer?.id}

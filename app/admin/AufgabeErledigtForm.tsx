@@ -10,11 +10,11 @@ export interface ErledigungData {
 }
 
 interface Props {
-  /** Wird aufgerufen wenn der Nutzer bestätigt — soll den aktuellen Eintrag als erledigt markieren */
   onBestaetigen: (data: ErledigungData) => Promise<void>;
+  /** Wird aufgerufen bei „Auf neuen Termin verlegen" — verschiebt die bestehende Task */
+  onVerschieben?: (faelligAm: string) => Promise<void>;
   onErledigt: () => void;
   onAbbrechen: () => void;
-  /** Wird benötigt für „Auf neuen Termin verlegen" — neue Task wird diesem Kunden zugeordnet */
   customerId?: string;
 }
 
@@ -24,7 +24,7 @@ const NOTIZ_PLACEHOLDER: Record<ErledigungsTyp, string> = {
   neuer_termin: 'Aufgabe / Anweisung für den neuen Termin …',
 };
 
-export default function AufgabeErledigtForm({ onBestaetigen, onErledigt, onAbbrechen, customerId }: Props) {
+export default function AufgabeErledigtForm({ onBestaetigen, onVerschieben, onErledigt, onAbbrechen, customerId }: Props) {
   const [typ, setTyp] = useState<ErledigungsTyp | null>(null);
   const [notiz, setNotiz] = useState('');
   const [neuerTermin, setNeuerTermin] = useState('');
@@ -37,18 +37,10 @@ export default function AufgabeErledigtForm({ onBestaetigen, onErledigt, onAbbre
     if (!typ || !canSubmit) return;
     setPending(true);
 
-    await onBestaetigen({ typ, notiz: notiz.trim() || undefined });
-
-    if (typ === 'neuer_termin' && customerId && neuerTermin) {
-      await fetch('/api/admin/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerId,
-          anweisung: notiz.trim() || 'Nachfass-Gespräch',
-          faelligAm: new Date(neuerTermin).toISOString(),
-        }),
-      });
+    if (typ === 'neuer_termin' && neuerTermin && onVerschieben) {
+      await onVerschieben(neuerTermin);
+    } else {
+      await onBestaetigen({ typ, notiz: notiz.trim() || undefined });
     }
 
     onErledigt();
