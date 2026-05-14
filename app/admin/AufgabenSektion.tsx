@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AufgabeErledigtForm, { type ErledigungData } from './AufgabeErledigtForm';
@@ -22,7 +22,6 @@ function AufgabeKarte({ task }: { task: AdminTask }) {
   const router = useRouter();
   const [skriptOpen, setSkriptOpen] = useState(false);
   const [erledigtFormOpen, setErledigtFormOpen] = useState(false);
-  const [, startTransition] = useTransition();
 
   async function onBestaetigen(data: ErledigungData) {
     await fetch(`/api/admin/tasks/${task.id}`, {
@@ -34,7 +33,7 @@ function AufgabeKarte({ task }: { task: AdminTask }) {
 
   function onErledigt() {
     setErledigtFormOpen(false);
-    startTransition(() => router.refresh());
+    router.refresh();
   }
 
   return (

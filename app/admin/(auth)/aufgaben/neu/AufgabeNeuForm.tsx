@@ -19,6 +19,7 @@ export default function AufgabeNeuForm({ kunden }: Props) {
   const [skript, setSkript] = useState('');
   const [kundenInput, setKundenInput] = useState('');
   const [customerId, setCustomerId] = useState<string | undefined>(undefined);
+  const [faelligAm, setFaelligAm] = useState('');
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -44,6 +45,7 @@ export default function AufgabeNeuForm({ kunden }: Props) {
         anweisung: anweisung.trim(),
         skript: skript.trim() || undefined,
         customerId: customerId ?? undefined,
+        faelligAm: faelligAm ? new Date(faelligAm).toISOString() : undefined,
       }),
     });
 
@@ -90,6 +92,22 @@ export default function AufgabeNeuForm({ kunden }: Props) {
         </datalist>
         {customerId && (
           <p className="mt-1.5 text-xs text-cp-tuerkis">Kunde zugeordnet ✓</p>
+        )}
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-semibold text-cp-blau">
+          Fällig am <span className="font-normal text-cp-braun/70">(optional)</span>
+        </label>
+        <input
+          type="date"
+          value={faelligAm}
+          onChange={(e) => setFaelligAm(e.target.value)}
+          min={new Date().toISOString().substring(0, 10)}
+          className="w-full h-11 text-sm border border-cp-beige/70 rounded-xl px-3.5 focus:outline-none focus:border-cp-tuerkis transition-colors text-cp-blau"
+        />
+        {faelligAm && (
+          <p className="mt-1.5 text-xs text-cp-braun/60">Aufgabe erscheint erst am gesetzten Tag in der Übersicht.</p>
         )}
       </div>
 

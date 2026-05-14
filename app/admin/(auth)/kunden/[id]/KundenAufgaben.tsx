@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AufgabeErledigtForm, { type ErledigungData } from '@/admin/AufgabeErledigtForm';
 
@@ -10,6 +10,7 @@ interface Task {
   skript: string | null;
   erledigtAm: Date | null;
   erledigungsTyp: string | null;
+  faelligAm: Date | null;
   createdAt: Date;
 }
 
@@ -23,7 +24,6 @@ function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) 
   const router = useRouter();
   const [skriptOpen, setSkriptOpen] = useState(false);
   const [erledigtFormOpen, setErledigtFormOpen] = useState(false);
-  const [, startTransition] = useTransition();
 
   const erledigt = !!task.erledigtAm;
 
@@ -37,7 +37,7 @@ function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) 
 
   function onErledigt() {
     setErledigtFormOpen(false);
-    startTransition(() => router.refresh());
+    router.refresh();
   }
 
   return (
@@ -100,8 +100,10 @@ function AufgabeKarte({ task, customerId }: { task: Task; customerId: string }) 
 export default function KundenAufgaben({ tasks, customerId }: { tasks: Task[]; customerId: string }) {
   if (tasks.length === 0) return null;
 
-  const offen = tasks.filter((t) => !t.erledigtAm);
-  const erledigt = tasks.filter((t) => t.erledigtAm);
+  const jetzt = new Date();
+  const offen      = tasks.filter((t) => !t.erledigtAm && (!t.faelligAm || new Date(t.faelligAm) <= jetzt));
+  const ausstehend = tasks.filter((t) => !t.erledigtAm && t.faelligAm && new Date(t.faelligAm) > jetzt);
+  const erledigt   = tasks.filter((t) => !!t.erledigtAm);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 lg:col-span-2">
@@ -115,6 +117,26 @@ export default function KundenAufgaben({ tasks, customerId }: { tasks: Task[]; c
       </h2>
       <div className="space-y-2">
         {offen.map((t) => <AufgabeKarte key={t.id} task={t} customerId={customerId} />)}
+
+        {ausstehend.length > 0 && (
+          <>
+            <p className="pt-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Ausstehend</p>
+            {ausstehend.map((t) => (
+              <div key={t.id} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-gray-300 shrink-0 mt-1.5" />
+                  <div>
+                    <p className="text-sm text-gray-500">{t.anweisung}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Fällig am {new Date(t.faelligAm!).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
         {erledigt.map((t) => <AufgabeKarte key={t.id} task={t} customerId={customerId} />)}
       </div>
     </div>

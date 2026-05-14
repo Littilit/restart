@@ -67,7 +67,6 @@ export default function AdminNav({ tags }: { tags: string[] }) {
             Aufgabe erstellen
           </Link>
         </li>
-
         {tags.length > 0 && (
           <li>
             <p className="px-3 pt-3 pb-1 text-xs text-white/30 uppercase tracking-wider font-semibold">
