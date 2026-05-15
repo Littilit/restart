@@ -9,6 +9,8 @@ const patchSchema = z.object({
   tags: z.array(z.string()).optional(),
   erstTermin: z.string().datetime().nullable().optional(),
   servicegesprachErledigt: z.boolean().optional(),
+  monatsKontingent: z.number().int().min(0).optional(),
+  unbegrenzt: z.boolean().optional(),
 });
 
 type Params = { params: Promise<{ id: string }> };
@@ -46,6 +48,8 @@ export async function PATCH(request: Request, { params }: Params) {
       tags?: string[];
       erstTermin?: Date | null;
       servicegesprachAm?: Date | null;
+      monatsKontingent?: number;
+      unbegrenzt?: boolean;
     } = {};
 
     if (body.status !== undefined) data.status = body.status;
@@ -53,6 +57,8 @@ export async function PATCH(request: Request, { params }: Params) {
     if ('erstTermin' in body) data.erstTermin = body.erstTermin ? new Date(body.erstTermin) : null;
     if (body.servicegesprachErledigt === true) data.servicegesprachAm = new Date();
     else if (body.servicegesprachErledigt === false) data.servicegesprachAm = null;
+    if (body.monatsKontingent !== undefined) data.monatsKontingent = body.monatsKontingent;
+    if (body.unbegrenzt !== undefined) data.unbegrenzt = body.unbegrenzt;
 
     const customer = await prisma.customer.update({ where: { id }, data });
     return NextResponse.json(customer);

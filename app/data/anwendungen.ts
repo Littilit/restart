@@ -93,6 +93,9 @@ export const ANWENDUNGEN: readonly Anwendung[] = [
   },
 ] as const;
 
+export const LONGEVITY_ANWENDUNGEN: AnwendungSlug[] = ['eisbox', 'redlight', 'infrarotsauna', 'boa-lymphmassage'];
+export const KARTEN_ANWENDUNGEN: AnwendungSlug[] = ['armstrong', 'cryoshaper', 'beckenbodenstuhl'];
+
 export function getAnwendung(slug: AnwendungSlug): Anwendung {
   const found = ANWENDUNGEN.find((a) => a.slug === slug);
   if (!found) throw new Error(`Anwendung nicht gefunden: ${slug}`);
