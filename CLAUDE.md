@@ -115,10 +115,10 @@ app/lib/auth.ts → createSession / deleteSession / getSession (jose JWT, HS256,
 
 ## Coolify Deployment
 
-| Umgebung | Subdomain | Branch |
-|----------|-----------|--------|
-| Dev | `restart-dev.recovery-augsburg.dev` | `develop` |
-| Prod | `restart.recovery-augsburg.dev` | `main` |
+| Umgebung | Subdomain | Branch | UUID |
+|----------|-----------|--------|------|
+| Prod | `restart.recovery-augsburg.dev` | `main` | `vpwm5qa4uvqts68i8nd8dw43` |
+| Dev | `restart-dev.recovery-augsburg.dev` | `develop` | `ez95ng0eoypmumennsg6iarh` |
 
 `entrypoint.sh` führt `prisma db push` automatisch bei jedem Container-Start aus — Schema-Änderungen brauchen keinen manuellen Schritt in Coolify.
 
