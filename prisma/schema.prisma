@@ -55,10 +55,14 @@ model Customer {
   servicegesprachAm   DateTime?
   alternativeEmails   String[]  @default([])
   alternativeTelefone String[]  @default([])
+  monatsKontingent    Int       @default(0)
+  unbegrenzt          Boolean   @default(false)
   anamnesen           Anamnese[]
   empfehlungen      Empfehlung[]
   notizen           Note[]
   tasks             Task[]
+  checkIns          CheckIn[]
+  karten            Card[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
@@ -122,6 +126,32 @@ model Task {
 
   @@index([erledigtAm])
   @@index([customerId])
+}
+
+model CheckIn {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  anwendung  String
+  cardId     String?
+  card       Card?    @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([anwendung, createdAt])
+}
+
+model Card {
+  id         String    @id @default(cuid())
+  customerId String
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  anwendung  String
+  groesse    Int
+  verbraucht Int       @default(0)
+  gekauftAm  DateTime  @default(now())
+  checkIns   CheckIn[]
+
+  @@index([customerId, anwendung])
 }
 
 model User {

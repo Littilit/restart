@@ -8,12 +8,13 @@ import NotizenEditor from './NotizenEditor';
 import ErstTerminEditor from './ErstTerminEditor';
 import KundenAufgaben from './KundenAufgaben';
 import KundenZusammenfuehren from './KundenZusammenfuehren';
+import KundenCheckIns from '../../../KundenCheckIns';
 import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
 import { DETAIL_FRAGEN } from '@/features/anamnese/fragen';
 import type { Kontraindikation, MainFocus } from '@/features/anamnese/types';
 import type { Frage } from '@/features/anamnese/fragen';
 
-type Tab = 'uebersicht' | 'empfehlungen' | 'notizen';
+type Tab = 'uebersicht' | 'empfehlungen' | 'notizen' | 'check_ins';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://restart.recovery-augsburg.dev';
 
@@ -38,7 +39,7 @@ interface Props {
 export default async function KundeDetail({ params, searchParams }: Props) {
   const { id } = await params;
   const { tab } = await searchParams;
-  const activeTab: Tab = (tab === 'empfehlungen' || tab === 'notizen') ? tab : 'uebersicht';
+  const activeTab: Tab = (tab === 'empfehlungen' || tab === 'notizen' || tab === 'check_ins') ? tab : 'uebersicht';
 
   const [customer, allCustomers] = await Promise.all([
     prisma.customer.findUnique({
@@ -76,7 +77,7 @@ export default async function KundeDetail({ params, searchParams }: Props) {
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-gray-200">
-        {(['uebersicht', 'empfehlungen', 'notizen'] as Tab[]).map((t) => (
+        {(['uebersicht', 'check_ins', 'empfehlungen', 'notizen'] as Tab[]).map((t) => (
           <Link
             key={t}
             href={`/admin/kunden/${id}?tab=${t}`}
@@ -86,7 +87,10 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            {t === 'uebersicht' ? 'Übersicht' : t === 'empfehlungen' ? 'Empfehlungen' : 'Notizen'}
+            {t === 'uebersicht' ? 'Übersicht'
+              : t === 'check_ins' ? 'Check-ins'
+              : t === 'empfehlungen' ? 'Empfehlungen'
+              : 'Notizen'}
             {t === 'empfehlungen' && customer.empfehlungen.length > 0 && (
               <span className="ml-1.5 bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded-full">
                 {customer.empfehlungen.length}
@@ -335,6 +339,15 @@ export default async function KundeDetail({ params, searchParams }: Props) {
 
       {activeTab === 'notizen' && (
         <NotizenEditor customerId={customer.id} initial={customer.notizen} />
+      )}
+
+      {activeTab === 'check_ins' && (
+        <KundenCheckIns
+          customerId={customer.id}
+          status={customer.status}
+          monatsKontingent={customer.monatsKontingent}
+          unbegrenzt={customer.unbegrenzt}
+        />
       )}
     </div>
   );
