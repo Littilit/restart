@@ -1,9 +1,55 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { LONGEVITY_ANWENDUNGEN, KARTEN_ANWENDUNGEN, getAnwendung } from '@/data/anwendungen';
 import type { AnwendungSlug } from '@/data/anwendungen';
+
+interface HeuteKunde {
+  id: string;
+  vorname: string;
+  nachname: string;
+  checkIns: { anwendung: string; createdAt: string }[];
+}
+
+function HeuteSection({ kunden }: { kunden: HeuteKunde[] }) {
+  if (kunden.length === 0) return null;
+
+  return (
+    <div className="max-w-2xl">
+      <h2 className="text-sm font-medium text-gray-500 mb-3">
+        Heute eingecheckt ({kunden.length})
+      </h2>
+      <div className="space-y-2">
+        {kunden.map((k) => (
+          <div key={k.id} className="flex items-start gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <Link
+                href={`/admin/kunden/${k.id}?tab=check_ins`}
+                className="font-medium text-cp-blau hover:underline text-sm"
+              >
+                {k.vorname} {k.nachname}
+              </Link>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {k.checkIns.map((ci, i) => {
+                  const a = getAnwendung(ci.anwendung as AnwendungSlug);
+                  const time = new Date(ci.createdAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <span key={i} className="inline-flex items-center gap-1 text-xs bg-gray-50 border border-gray-100 rounded-full px-2 py-0.5 text-gray-600">
+                      <span>{a.emoji}</span>
+                      <span>{a.kurzName}</span>
+                      <span className="text-gray-400">{time}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface SearchResult {
   id: string;
@@ -164,7 +210,15 @@ export default function CheckInPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [heuteKunden, setHeuteKunden] = useState<HeuteKunde[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const fetchHeute = useCallback(async () => {
+    const res = await fetch('/api/admin/check-in/heute');
+    if (res.ok) setHeuteKunden(await res.json());
+  }, []);
+
+  useEffect(() => { fetchHeute(); }, [fetchHeute]);
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
@@ -184,35 +238,44 @@ export default function CheckInPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ anwendung }),
     });
-    if (res.ok) return null;
+    if (res.ok) {
+      fetchHeute();
+      return null;
+    }
     const body = await res.json();
     return body.error ?? 'Fehler beim Check-in';
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-cp-blau mb-6">Check-in</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-semibold text-cp-blau mb-6">Check-in</h1>
 
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Name, E-Mail oder Telefonnummer..."
-        autoFocus
-        className="w-full max-w-lg px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-cp-tuerkis mb-6"
-      />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Name, E-Mail oder Telefonnummer..."
+          autoFocus
+          className="w-full max-w-lg px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-cp-tuerkis mb-4"
+        />
 
-      {loading && <p className="text-sm text-gray-400">Suche...</p>}
+        {loading && <p className="text-sm text-gray-400">Suche...</p>}
 
-      {!loading && query.length >= 2 && results.length === 0 && (
-        <p className="text-sm text-gray-400">Keine Kunden gefunden.</p>
-      )}
+        {!loading && query.length >= 2 && results.length === 0 && (
+          <p className="text-sm text-gray-400">Keine Kunden gefunden.</p>
+        )}
 
-      <div className="space-y-3 max-w-2xl">
-        {results.map((c) => (
-          <KundenKarte key={c.id} customer={c} onCheckIn={handleCheckIn} />
-        ))}
+        {results.length > 0 && (
+          <div className="space-y-3 max-w-2xl">
+            {results.map((c) => (
+              <KundenKarte key={c.id} customer={c} onCheckIn={handleCheckIn} />
+            ))}
+          </div>
+        )}
       </div>
+
+      <HeuteSection kunden={heuteKunden} />
     </div>
   );
 }
