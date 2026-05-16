@@ -11,10 +11,10 @@ const HELLGRAU = '#f3f4f6';
 const DUNKELGRAU = '#374151';
 
 const VISION_TEXT =
-  'Ich habe den Cryopoint Augsburg gegründet, weil ich am eigenen Leib erfahren habe, ' +
-  'dass herkömmliche Methoden oft an ihre Grenzen stoßen. Meine Vision ist es, jedem Zugang zu den ' +
-  'Technologien zu verschaffen, die sonst nur Profisportlern vorbehalten sind. ' +
-  'Wir heilen nicht – wir geben deinem Körper die Ressourcen zurück, sich selbst zu optimieren.';
+  'Wir verlassen uns heute oft zu sehr auf schnelle Lösungen von außen, anstatt die unglaublichen Fähigkeiten unseres eigenen Körpers zu nutzen. ' +
+  'Meine Vision für den Cryopoint Augsburg ist es, dir die Eigenverantwortung für deine Gesundheit zurückzugeben. ' +
+  'Ich möchte Teil deiner Lösung sein – egal, ob du Wege suchst, endlich wieder beschwerdefrei zu leben oder deine volle Leistungsfähigkeit auszuschöpfen. ' +
+  'Wir bieten dir die Ressourcen, damit du die Veränderung selbst in die Hand nehmen kannst.';
 
 const KATEGORIE_NAME: Record<string, string> = {
   regenerate: 'Regenerate',
