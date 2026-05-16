@@ -10,6 +10,12 @@ const GRAU = '#6b7280';
 const HELLGRAU = '#f3f4f6';
 const DUNKELGRAU = '#374151';
 
+const VISION_TEXT =
+  'Ich habe den Cryopoint Augsburg gegründet, weil ich am eigenen Leib erfahren habe, ' +
+  'dass herkömmliche Methoden oft an ihre Grenzen stoßen. Meine Vision ist es, jedem Zugang zu den ' +
+  'Technologien zu verschaffen, die sonst nur Profisportlern vorbehalten sind. ' +
+  'Wir heilen nicht – wir geben deinem Körper die Ressourcen zurück, sich selbst zu optimieren.';
+
 const KATEGORIE_NAME: Record<string, string> = {
   regenerate: 'Regenerate',
   armstrong: 'Armstrong MMS',
@@ -35,19 +41,19 @@ const s = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 10,
-    color: BLAU,
+    color: DUNKELGRAU,
     paddingTop: 40,
-    paddingBottom: 55,
+    paddingBottom: 60,
     paddingHorizontal: 45,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 6,
-    paddingBottom: 14,
+    alignItems: 'flex-end',
+    marginBottom: 16,
+    paddingBottom: 12,
     borderBottomWidth: 2,
-    borderBottomColor: TUERKIS,
+    borderBottomColor: BLAU,
   },
   logoText: {
     fontSize: 18,
@@ -69,29 +75,179 @@ const s = StyleSheet.create({
     marginBottom: 2,
   },
   headerName: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: 'Helvetica-Bold',
     color: BLAU,
   },
   headerDate: {
-    fontSize: 9,
+    fontSize: 8.5,
     color: GRAU,
     marginTop: 2,
   },
-  titleSection: {
-    marginTop: 18,
-    marginBottom: 16,
+  visionBox: {
+    backgroundColor: '#eef4ff',
+    borderLeftWidth: 4,
+    borderLeftColor: BLAU,
+    borderStyle: 'solid',
+    padding: 12,
+    marginBottom: 18,
   },
-  title: {
-    fontSize: 15,
+  visionText: {
+    fontSize: 9.5,
+    color: DUNKELGRAU,
+    lineHeight: 1.65,
+    fontStyle: 'italic',
+  },
+  visionAttrib: {
+    fontSize: 8.5,
     fontFamily: 'Helvetica-Bold',
-    color: TUERKIS,
+    color: BLAU,
+    marginTop: 6,
   },
-  typBadge: {
-    marginTop: 5,
+  h2: {
+    fontSize: 13,
+    fontFamily: 'Helvetica-Bold',
+    color: BLAU,
+    borderBottomWidth: 1,
+    borderBottomColor: '#dddddd',
+    paddingBottom: 5,
+    marginBottom: 10,
+  },
+  introText: {
+    fontSize: 9.5,
+    color: DUNKELGRAU,
+    lineHeight: 1.6,
+    marginBottom: 12,
+  },
+  // Tabelle Core-Stack
+  tableHeaderRow: {
+    flexDirection: 'row',
+    backgroundColor: BLAU,
+  },
+  tableHeaderCell: {
+    padding: 8,
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: 'white',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eeeeee',
+  },
+  tableRowAlt: {
+    backgroundColor: '#f9f9f9',
+  },
+  tableCell: {
+    padding: 10,
+  },
+  colAnwendung: { flex: 2 },
+  colNutzen: { flex: 5 },
+  colFrequenz: { flex: 2 },
+  tableCellName: {
+    fontSize: 9.5,
+    fontFamily: 'Helvetica-Bold',
+    color: BLAU,
+  },
+  tableCellNutzen: {
+    fontSize: 9,
+    color: DUNKELGRAU,
+    lineHeight: 1.55,
+  },
+  tableCellBegr: {
+    fontSize: 8.5,
+    color: GRAU,
+    lineHeight: 1.5,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  tableCellFreq: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: BLAU,
+  },
+  tableWrapper: {
+    marginBottom: 20,
+  },
+  // CTA-Box
+  ctaBox: {
+    backgroundColor: BLAU,
+    borderRadius: 6,
+    padding: 18,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  ctaTitle: {
+    fontSize: 12,
+    fontFamily: 'Helvetica-Bold',
+    color: 'white',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  ctaIntro: {
+    fontSize: 9,
+    color: '#a0bcd8',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  ctaPrice: {
+    fontSize: 22,
+    fontFamily: 'Helvetica-Bold',
+    color: 'white',
+    marginVertical: 5,
+    textAlign: 'center',
+  },
+  ctaHint: {
+    fontSize: 8.5,
+    color: '#a0bcd8',
+    textAlign: 'center',
+    marginTop: 3,
+  },
+  ctaFolgeTitle: {
+    fontSize: 12,
+    fontFamily: 'Helvetica-Bold',
+    color: 'white',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  ctaFolgeText: {
+    fontSize: 9,
+    color: '#a0bcd8',
+    lineHeight: 1.6,
+    textAlign: 'center',
+  },
+  // Upsell
+  upsellBox: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#cccccc',
+    backgroundColor: '#fafafa',
+    padding: 12,
+    marginBottom: 18,
+  },
+  upsellTitle: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: GRAU,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  upsellItem: {
+    marginBottom: 7,
+  },
+  upsellName: {
+    fontSize: 9.5,
+    fontFamily: 'Helvetica-Bold',
+    color: DUNKELGRAU,
+    marginBottom: 2,
+  },
+  upsellText: {
     fontSize: 9,
     color: GRAU,
+    lineHeight: 1.5,
   },
+  // Preise
   section: {
     marginBottom: 18,
   },
@@ -103,98 +259,6 @@ const s = StyleSheet.create({
     paddingBottom: 4,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
-  },
-  visionBox: {
-    backgroundColor: HELLGRAU,
-    borderRadius: 4,
-    padding: 12,
-  },
-  visionText: {
-    fontSize: 9.5,
-    color: DUNKELGRAU,
-    lineHeight: 1.65,
-    fontStyle: 'italic',
-  },
-  visionAttrib: {
-    fontSize: 8.5,
-    color: GRAU,
-    marginTop: 6,
-  },
-  einleitungText: {
-    fontSize: 9.5,
-    color: DUNKELGRAU,
-    lineHeight: 1.6,
-    backgroundColor: HELLGRAU,
-    padding: 10,
-    borderRadius: 4,
-  },
-  anwendungBlock: {
-    marginBottom: 12,
-  },
-  anwendungName: {
-    fontSize: 10.5,
-    fontFamily: 'Helvetica-Bold',
-    color: BLAU,
-    marginBottom: 3,
-  },
-  anwendungLabel: {
-    fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
-    color: TUERKIS,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-    marginTop: 4,
-  },
-  anwendungMechanism: {
-    fontSize: 9,
-    color: GRAU,
-    lineHeight: 1.55,
-    marginBottom: 3,
-  },
-  anwendungFrequenz: {
-    fontSize: 9,
-    color: DUNKELGRAU,
-    marginBottom: 3,
-  },
-  anwendungBegr: {
-    fontSize: 9,
-    color: GRAU,
-    lineHeight: 1.5,
-    fontStyle: 'italic',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#e5e7eb',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  ctaBox: {
-    backgroundColor: HELLGRAU,
-    borderRadius: 4,
-    padding: 12,
-  },
-  ctaHighlight: {
-    fontSize: 12,
-    fontFamily: 'Helvetica-Bold',
-    color: TUERKIS,
-    marginBottom: 4,
-  },
-  ctaDetail: {
-    fontSize: 10,
-    color: BLAU,
-    marginBottom: 2,
-  },
-  ctaHinweis: {
-    fontSize: 8.5,
-    color: GRAU,
-    lineHeight: 1.5,
-    marginTop: 4,
-  },
-  ctaFolgeText: {
-    fontSize: 9.5,
-    color: DUNKELGRAU,
-    lineHeight: 1.6,
   },
   preisBlock: {
     marginBottom: 12,
@@ -227,6 +291,7 @@ const s = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
   },
+  // Quellenverzeichnis
   literaturBlock: {
     marginBottom: 5,
   },
@@ -251,12 +316,7 @@ const s = StyleSheet.create({
     lineHeight: 1.4,
     fontStyle: 'italic',
   },
-  legalText: {
-    fontSize: 8,
-    color: GRAU,
-    lineHeight: 1.5,
-    marginTop: 6,
-  },
+  // Footer
   footer: {
     position: 'absolute',
     bottom: 24,
@@ -266,10 +326,16 @@ const s = StyleSheet.create({
     borderTopColor: '#e5e7eb',
     paddingTop: 8,
   },
-  footerText: {
+  footerContact: {
     fontSize: 8,
     color: GRAU,
     textAlign: 'center',
+    marginBottom: 3,
+  },
+  legalText: {
+    fontSize: 7.5,
+    color: GRAU,
+    lineHeight: 1.5,
   },
 });
 
@@ -311,7 +377,6 @@ export function AngebotPdf({
     try { return getAnwendung(a.slug).kategorie === 'bodyforming'; } catch { return false; }
   });
 
-  // Studiensammlung für Literaturverzeichnis
   const allStudien: Array<{ studie: Studie; globalNr: number }> = [];
   let globalNr = 1;
   for (const a of anwendungen) {
@@ -329,32 +394,48 @@ export function AngebotPdf({
     if (!kategorieToKurzNamen[kat]) kategorieToKurzNamen[kat] = [];
     try {
       kategorieToKurzNamen[kat].push(getAnwendung(a.slug).kurzName);
-    } catch {
-      // unbekannter Slug
-    }
+    } catch { /* unbekannter Slug */ }
   }
 
   const hasPreise = Object.keys(preisSnapshot).length > 0;
 
-  function renderAnwendungBlock(a: AnwendungItem) {
+  function renderTableRow(a: AnwendungItem, index: number) {
     let anwName: string = a.slug;
-    try { anwName = getAnwendung(a.slug).name; } catch { /* unbekannter Slug */ }
+    try { anwName = getAnwendung(a.slug).kurzName; } catch { /* */ }
+    const research = RESEARCH[a.slug];
+    const isAlt = index % 2 === 1;
+    return (
+      <View key={a.slug} style={[s.tableRow, isAlt ? s.tableRowAlt : {}]}>
+        <View style={[s.tableCell, s.colAnwendung]}>
+          <Text style={s.tableCellName}>{anwName}</Text>
+        </View>
+        <View style={[s.tableCell, s.colNutzen]}>
+          <Text style={s.tableCellNutzen}>{research?.nutzen ?? '–'}</Text>
+          {a.begruendung ? (
+            <Text style={s.tableCellBegr}>{a.begruendung}</Text>
+          ) : null}
+        </View>
+        <View style={[s.tableCell, s.colFrequenz]}>
+          <Text style={s.tableCellFreq}>
+            {a.haeufigkeitText || research?.sessions || '–'}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  function renderUpsellItem(a: AnwendungItem) {
+    let anwName: string = a.slug;
+    try { anwName = getAnwendung(a.slug).name; } catch { /* */ }
     const research = RESEARCH[a.slug];
     return (
-      <View key={a.slug} style={s.anwendungBlock}>
-        <Text style={s.anwendungName}>{anwName}</Text>
-        {research && (
-          <>
-            <Text style={s.anwendungLabel}>Warum für dich?</Text>
-            <Text style={s.anwendungMechanism}>{research.mechanism}</Text>
-          </>
-        )}
-        <Text style={s.anwendungLabel}>Empfehlung</Text>
-        <Text style={s.anwendungFrequenz}>{a.haeufigkeitText || research?.sessions || '–'}</Text>
-        {a.begruendung ? (
-          <Text style={s.anwendungBegr}>{a.begruendung}</Text>
-        ) : null}
-        <View style={s.divider} />
+      <View key={a.slug} style={s.upsellItem}>
+        <Text style={s.upsellName}>
+          {anwName}{a.haeufigkeitText ? ` · ${a.haeufigkeitText}` : ''}
+        </Text>
+        <Text style={s.upsellText}>
+          {a.begruendung || research?.nutzen || '–'}
+        </Text>
       </View>
     );
   }
@@ -362,91 +443,87 @@ export function AngebotPdf({
   return (
     <Document>
       <Page size="A4" style={s.page}>
-        {/* 1. Header */}
+        {/* Header */}
         <View style={s.header}>
           <View>
             <Text style={s.logoText}>CRYOPOINT</Text>
             <Text style={s.logoSub}>Augsburg</Text>
           </View>
           <View style={s.headerRight}>
-            <Text style={s.headerLabel}>Angebot für</Text>
+            <Text style={s.headerLabel}>
+              {typ === 'neukunde' ? 'Expertenempfehlung für' : 'Folgeangebot für'}
+            </Text>
             <Text style={s.headerName}>{kundenName}</Text>
             <Text style={s.headerDate}>{formatDatum(erstelltAm)}</Text>
           </View>
         </View>
 
-        {/* 2. Titel */}
-        <View style={s.titleSection}>
-          <Text style={s.title}>
-            {typ === 'neukunde'
-              ? 'Dein persönliches Neukunden-Angebot'
-              : 'Dein persönliches Folgeangebot'}
-          </Text>
-          <Text style={s.typBadge}>Cryopoint Augsburg – Individuelle Empfehlung</Text>
+        {/* Vision */}
+        <View style={s.visionBox}>
+          <Text style={s.visionText}>{`"${VISION_TEXT}"`}</Text>
+          <Text style={s.visionAttrib}>— Tim Lischke, Inhaber</Text>
         </View>
 
-        {/* 3. Vision */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>Warum das für dich Sinn macht</Text>
-          <View style={s.visionBox}>
-            <Text style={s.visionText}>
-              {`Dein Körper ist anpassungsfähiger, als du glaubst. Die richtigen Reize zur richtigen Zeit – das ist das Prinzip hinter allem, was wir bei Cryopoint tun. Deine Empfehlung heute ist kein Standard – sie ist der Einstieg in eine Routine, die zu dir passt.`}
-            </Text>
-            <Text style={s.visionAttrib}>– Tim Lischke, Cryopoint Augsburg</Text>
-          </View>
-        </View>
+        {/* Strategie-Überschrift + Einleitung */}
+        <Text style={s.h2}>Deine individuelle Biohacking-Strategie</Text>
+        {einleitung ? (
+          <Text style={s.introText}>{einleitung}</Text>
+        ) : null}
 
-        {/* 4. Individuelle Strategie */}
-        {einleitung && (
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>Deine individuelle Strategie</Text>
-            <Text style={s.einleitungText}>{einleitung}</Text>
-          </View>
-        )}
-
-        {/* 5. Core-Regenerations-Stack */}
+        {/* Core-Stack Tabelle */}
         {coreAnwendungen.length > 0 && (
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>Core-Regenerations-Stack</Text>
-            {coreAnwendungen.map(renderAnwendungBlock)}
+          <View style={s.tableWrapper}>
+            <View style={s.tableHeaderRow}>
+              <View style={[s.tableHeaderCell, s.colAnwendung]}>
+                <Text>Anwendung</Text>
+              </View>
+              <View style={[s.tableHeaderCell, s.colNutzen]}>
+                <Text>Dein Nutzen</Text>
+              </View>
+              <View style={[s.tableHeaderCell, s.colFrequenz]}>
+                <Text>Frequenz</Text>
+              </View>
+            </View>
+            {coreAnwendungen.map((a, i) => renderTableRow(a, i))}
           </View>
         )}
 
-        {/* 6. Bodyforming- & Funktions-Block (Upsell) – nur wenn vorhanden */}
-        {upsellAnwendungen.length > 0 && (
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>Bodyforming- &amp; Funktions-Block (Upsell)</Text>
-            {upsellAnwendungen.map(renderAnwendungBlock)}
-          </View>
-        )}
-
-        {/* 7. CTA – typabhängig */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>Dein nächster Schritt</Text>
+        {/* CTA */}
+        <View style={s.ctaBox}>
           {typ === 'neukunde' ? (
-            <View style={s.ctaBox}>
-              <Text style={s.ctaHighlight}>
-                Neukunden-Special: {NEUKUNDEN_ANGEBOT.sessions} Sessions · {NEUKUNDEN_ANGEBOT.preis} € · {NEUKUNDEN_ANGEBOT.gueltigkeitWochen} Wochen
+            <>
+              <Text style={s.ctaTitle}>Dein Start: Das Neukunden-Special</Text>
+              <Text style={s.ctaIntro}>
+                Etabliere deinen persönlichen Rhythmus in den ersten {NEUKUNDEN_ANGEBOT.gueltigkeitWochen} Wochen:
               </Text>
-              <Text style={s.ctaDetail}>
-                Starte jetzt mit deinem persönlichen Einstiegspaket – frei auf alle Core-Anwendungen aufteilbar.
+              <Text style={s.ctaPrice}>
+                {NEUKUNDEN_ANGEBOT.sessions} Sessions für {NEUKUNDEN_ANGEBOT.preis} €
               </Text>
-              <Text style={s.ctaHinweis}>{NEUKUNDEN_ANGEBOT.hinweis}</Text>
-              <Text style={s.ctaHinweis}>
-                Langfristig empfehlen wir dir eine unserer Mitgliedschaften für die regelmäßige Nutzung.
-              </Text>
-            </View>
+              <Text style={s.ctaHint}>{NEUKUNDEN_ANGEBOT.hinweis}</Text>
+              <Text style={s.ctaHint}>Frei aufteilbar auf alle Core-Anwendungen.</Text>
+            </>
           ) : (
-            <View style={s.ctaBox}>
-              <Text style={s.ctaHighlight}>Deine Mitgliedschaft – die wirtschaftlich sinnvollste Langfristlösung</Text>
-              <Text style={s.ctaFolgeText}>
-                Als regelmäßiger Nutzer von Cryopoint empfehlen wir dir eine Mitgliedschaft – unbegrenzt oder mit Monatskontingent. So holst du das Maximum aus deiner Routine heraus, zu den besten Konditionen.
+            <>
+              <Text style={s.ctaFolgeTitle}>
+                Deine Mitgliedschaft – die wirtschaftlich sinnvollste Langfristlösung
               </Text>
-            </View>
+              <Text style={s.ctaFolgeText}>
+                Als regelmäßiger Nutzer empfehlen wir dir eine Mitgliedschaft – unbegrenzt oder mit Monatskontingent.
+                So holst du das Maximum aus deiner Routine heraus, zu den besten Konditionen.
+              </Text>
+            </>
           )}
         </View>
 
-        {/* 8. Preisübersicht */}
+        {/* Upsell */}
+        {upsellAnwendungen.length > 0 && (
+          <View style={s.upsellBox}>
+            <Text style={s.upsellTitle}>Zusatz-Fokus: Bodyforming & Funktion</Text>
+            {upsellAnwendungen.map(renderUpsellItem)}
+          </View>
+        )}
+
+        {/* Preisübersicht */}
         {hasPreise && (
           <View style={s.section}>
             <Text style={s.sectionTitle}>Preisübersicht</Text>
@@ -479,7 +556,7 @@ export function AngebotPdf({
           </View>
         )}
 
-        {/* 9. Hinweise */}
+        {/* Hinweise */}
         {zusatzhinweis && (
           <View style={s.section}>
             <Text style={s.sectionTitle}>Hinweise</Text>
@@ -487,7 +564,7 @@ export function AngebotPdf({
           </View>
         )}
 
-        {/* 10. Wissenschaftliches Quellenverzeichnis */}
+        {/* Quellenverzeichnis */}
         {allStudien.length > 0 && (
           <View style={s.section}>
             <Text style={s.sectionTitle}>Wissenschaftliche Quellen</Text>
@@ -502,13 +579,15 @@ export function AngebotPdf({
           </View>
         )}
 
-        {/* 11. Footer + Rechtlicher Hinweis */}
+        {/* Footer */}
         <View style={s.footer}>
-          <Text style={s.footerText}>
+          <Text style={s.footerContact}>
             Cryopoint Augsburg · Tel. +49 821 8998881 · restart.recovery-augsburg.dev
           </Text>
           <Text style={s.legalText}>
-            Diese Empfehlung dient der Orientierung und stellt keine Heilaussage dar. Cryopoint Augsburg ist keine medizinische Einrichtung. Bei gesundheitlichen Beschwerden wende dich an einen Arzt.
+            Rechtlicher Hinweis: Unsere Anwendungen dienen der allgemeinen Gesundheitsförderung und Regeneration.
+            Sie ersetzen keine ärztliche Behandlung oder Diagnose. Wir geben ausdrücklich keine Heilversprechen ab.
+            Alle genannten Erfahrungen basieren auf Kundenberichten und der aktuellen Studienlage.
           </Text>
         </View>
       </Page>
