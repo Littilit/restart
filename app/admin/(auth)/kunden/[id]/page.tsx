@@ -8,6 +8,7 @@ import NotizenEditor from './NotizenEditor';
 import ErstTerminEditor from './ErstTerminEditor';
 import KundenAufgaben from './KundenAufgaben';
 import KundenZusammenfuehren from './KundenZusammenfuehren';
+import StammdatenEditor from './StammdatenEditor';
 import KundenCheckIns from '../../../KundenCheckIns';
 import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
 import { DETAIL_FRAGEN } from '@/features/anamnese/fragen';
@@ -110,7 +111,21 @@ export default async function KundeDetail({ params, searchParams }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Stammdaten */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-4">Stammdaten</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-700">Stammdaten</h2>
+              <StammdatenEditor
+                customerId={customer.id}
+                vorname={customer.vorname}
+                nachname={customer.nachname}
+                email={customer.email}
+                telefon={customer.telefon}
+                geburtsdatum={customer.geburtsdatum}
+                adresse={customer.adresse}
+                herkunft={customer.herkunft}
+                alternativeEmails={customer.alternativeEmails}
+                alternativeTelefone={customer.alternativeTelefone}
+              />
+            </div>
             <dl className="space-y-2 text-sm">
               <Row label="Name" value={`${customer.vorname} ${customer.nachname}`} />
               <div className="flex gap-2 text-sm">
