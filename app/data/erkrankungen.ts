@@ -95,9 +95,9 @@ export const ERKRANKUNGEN: Erkrankung[] = [
   {
     id: 'schlafstoerungen',
     label: 'Schlafstörungen',
-    anwendungen: ['infrarotsauna', 'eisbox'],
+    anwendungen: ['infrarotsauna', 'redlight', 'eisbox'],
     einleitungstext:
-      'Viele unserer Kunden mit Schlafproblemen nutzen erfolgreich abendliche Infrarot-Sessions – die reaktive Absenkung der Körperkerntemperatur nach der Wärme ist das präziseste Einschlafsignal des Körpers.',
+      'Viele unserer Kunden mit Schlafproblemen nutzen erfolgreich abendliche Infrarot- und Rotlicht-Sessions – die reaktive Absenkung der Körperkerntemperatur nach der Wärme ist das präziseste Einschlafsignal des Körpers, und Rotlicht fördert zusätzlich die Melatoninproduktion.',
   },
   {
     id: 'burnout',
@@ -130,9 +130,9 @@ export const ERKRANKUNGEN: Erkrankung[] = [
   {
     id: 'lip-lymphoedem',
     label: 'Lip- / Lymphödem',
-    anwendungen: ['boa-lymphmassage', 'redlight'],
+    anwendungen: ['boa-lymphmassage', 'eisbox', 'redlight'],
     einleitungstext:
-      'Viele unserer Kunden mit Lip- oder Lymphödem nutzen erfolgreich die BOA-Druckwellenmassage – die maschinelle Kompressionsmassage mobilisiert die Lymphe systematisch und reduziert das Schweregefühl messbar.',
+      'Viele unserer Kunden mit Lip- oder Lymphödem nutzen erfolgreich die Kombination aus BOA-Druckwellenmassage und Kryotherapie – die maschinelle Kompressionsmassage mobilisiert die Lymphe systematisch, Kälte verengt die Gefäße und reduziert das Ödem zusätzlich.',
   },
 ];
 
