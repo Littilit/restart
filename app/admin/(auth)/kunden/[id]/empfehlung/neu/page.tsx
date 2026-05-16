@@ -6,7 +6,6 @@ import type { MainFocus } from '@/features/anamnese/types';
 import { ANWENDUNGEN, type AnwendungSlug } from '@/data/anwendungen';
 import { RESEARCH } from '@/data/research';
 import EmpfehlungEditor from './EmpfehlungEditor';
-import ExpertenEmpfehlungEditor from './ExpertenEmpfehlungEditor';
 
 const VALID_SLUGS = new Set<string>(ANWENDUNGEN.map((a) => a.slug));
 
@@ -19,7 +18,6 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
   const { id } = await params;
   const { typ: typParam } = await searchParams;
 
-  const isExperte = typParam === 'experte';
   const typ: 'neukunde' | 'folge' = typParam === 'folge' ? 'folge' : 'neukunde';
 
   const customer = await prisma.customer.findUnique({
@@ -42,13 +40,10 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
 
   let initial: { slug: AnwendungSlug; haeufigkeitText: string; begruendung: string }[];
 
-  if (isExperte) {
-    initial = vorschlag.map((entry) => ({
-      slug: entry.slug,
-      haeufigkeitText: RESEARCH[entry.slug]?.sessions ?? entry.sessions,
-      begruendung: '',
-    }));
-  } else if (typ === 'folge' && customer.empfehlungen.length > 0) {
+  let initialErkrankungen: string[] = [];
+  let initialMitgliedschaft = '';
+
+  if (typ === 'folge' && customer.empfehlungen.length > 0) {
     const letzteEmpfehlung = customer.empfehlungen[0];
     const raw = Array.isArray(letzteEmpfehlung.anwendungen)
       ? letzteEmpfehlung.anwendungen
@@ -71,23 +66,27 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
           begruendung: o.begruendung as string,
         };
       });
+
+    const rawErkrankungen = letzteEmpfehlung.erkrankungen;
+    if (Array.isArray(rawErkrankungen)) {
+      initialErkrankungen = rawErkrankungen.filter((e): e is string => typeof e === 'string');
+    }
+    if (typeof letzteEmpfehlung.mitgliedschaft === 'string') {
+      initialMitgliedschaft = letzteEmpfehlung.mitgliedschaft;
+    }
   } else {
     initial = vorschlag.map((entry) => ({
       slug: entry.slug,
-      haeufigkeitText: entry.sessions,
-      begruendung: entry.explanation,
+      haeufigkeitText: RESEARCH[entry.slug]?.sessions ?? entry.sessions,
+      begruendung: '',
     }));
   }
 
   const initialEinleitung = mainFocus
-    ? `${customer.vorname} ${customer.nachname} hat im Fokus: ${mainFocus}${mainFocus2 ? ` und ${mainFocus2}` : ''}. Die folgende Expertenempfehlung basiert auf den Anamnese-Daten und der wissenschaftlichen Studienlage zu den ausgewählten Anwendungen.`
+    ? `${customer.vorname} ${customer.nachname} hat im Fokus: ${mainFocus}${mainFocus2 ? ` und ${mainFocus2}` : ''}. Die folgende Empfehlung basiert auf den Anamnese-Daten und der wissenschaftlichen Studienlage zu den ausgewählten Anwendungen.`
     : '';
 
-  const typLabel = isExperte
-    ? 'Expertenempfehlung'
-    : typ === 'neukunde'
-    ? 'Neukunden-Angebot'
-    : 'Folgeangebot';
+  const typLabel = typ === 'neukunde' ? 'Neukunden-Angebot' : 'Folgeangebot';
 
   return (
     <div>
@@ -104,15 +103,18 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
         <p className="text-sm text-gray-500 mt-0.5">{typLabel}</p>
       </div>
 
-      {isExperte ? (
-        <ExpertenEmpfehlungEditor
-          customerId={id}
-          initial={initial}
-          initialEinleitung={initialEinleitung}
-        />
-      ) : (
-        <EmpfehlungEditor customerId={id} typ={typ} initial={initial} />
-      )}
+      <EmpfehlungEditor
+        customerId={id}
+        typ={typ}
+        initial={initial}
+        initialEinleitung={initialEinleitung}
+        initialMainFocus={mainFocus}
+        initialMainFocus2={mainFocus2}
+        initialChamber2={chamber2}
+        initialChamber2b={chamber2b}
+        initialErkrankungen={initialErkrankungen}
+        initialMitgliedschaft={initialMitgliedschaft}
+      />
     </div>
   );
 }

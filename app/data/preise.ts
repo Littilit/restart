@@ -1,5 +1,49 @@
 import type { AnwendungSlug } from './anwendungen';
 
+export interface Mitgliedschaft {
+  id: 'flex' | 'premium' | 'longevity';
+  name: string;
+  inkludierteSessions: string;
+  zusatzSession: number | null;
+  laufzeiten: { monate: number; monatsbeitrag: number }[];
+}
+
+export const MITGLIEDSCHAFTEN: Mitgliedschaft[] = [
+  {
+    id: 'flex',
+    name: 'FLEX-Club',
+    inkludierteSessions: '2 Sessions / Monat',
+    zusatzSession: 9.90,
+    laufzeiten: [
+      { monate: 1, monatsbeitrag: 39.90 },
+      { monate: 6, monatsbeitrag: 34.90 },
+      { monate: 12, monatsbeitrag: 29.90 },
+    ],
+  },
+  {
+    id: 'premium',
+    name: 'Premium-Club',
+    inkludierteSessions: '4 Sessions / Monat',
+    zusatzSession: 9.90,
+    laufzeiten: [
+      { monate: 1, monatsbeitrag: 79.90 },
+      { monate: 6, monatsbeitrag: 69.90 },
+      { monate: 12, monatsbeitrag: 59.90 },
+    ],
+  },
+  {
+    id: 'longevity',
+    name: 'Longevity-Club',
+    inkludierteSessions: 'Unbegrenzt',
+    zusatzSession: null,
+    laufzeiten: [
+      { monate: 1, monatsbeitrag: 149.90 },
+      { monate: 6, monatsbeitrag: 129.90 },
+      { monate: 12, monatsbeitrag: 99.90 },
+    ],
+  },
+];
+
 export type PreisKategorie =
   | 'regenerate'
   | 'armstrong'
@@ -67,6 +111,13 @@ export const PREISE: Record<PreisKategorie, Preise> = {
       { menge: 6, preis: 0 },
     ],
   },
+};
+
+export const NEUKUNDEN_ANGEBOT = {
+  sessions: 4,
+  preis: 59,
+  gueltigkeitWochen: 4,
+  hinweis: 'Einmaliges Angebot, keine Verlängerung. 4 Sessions frei aufteilbar.',
 };
 
 export const SLUG_KATEGORIE: Record<AnwendungSlug, PreisKategorie> = {

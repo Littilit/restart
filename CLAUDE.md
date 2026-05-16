@@ -85,7 +85,9 @@ Customer (1) ──< Task       (onDelete: SetNull)
 
 ### PDF-Generierung
 
-Route `app/p/[token]/route.ts` — öffentlich erreichbar per `shareToken`. Rendert via `@react-pdf/renderer` entweder `AngebotPdf` oder `ExpertenPdf`. Die `as unknown as`-Casts sind eine bekannte Inkompatibilität zwischen `@react-pdf/renderer` und React 19.
+Route `app/p/[token]/route.ts` — öffentlich erreichbar per `shareToken`. Rendert via `@react-pdf/renderer` immer `AngebotPdf` (einziges Template). Struktur: Header → Titel (Du-Form) → Vision → Individuelle Strategie (einleitung) → Core-Regenerations-Stack (longevity) → Bodyforming-Upsell-Block (bodyforming, optional) → CTA (typ-abhängig: neukunde = 59-€-Special, folge = Mitgliedschaft) → Preisübersicht → Hinweise → Quellenverzeichnis → Footer + Rechtlicher Hinweis. Die `as unknown as`-Casts sind eine bekannte Inkompatibilität zwischen `@react-pdf/renderer` und React 19.
+
+`EmpfehlungTyp`-Enum hat nur noch zwei Werte: `neukunde` | `folge`. Der Admin-Editor (`EmpfehlungEditor.tsx`) zeigt Einträge gruppiert nach `kategorie` (longevity = Core-Stack, bodyforming = Upsell) mit Wirkmechanismen aus `research.ts` als read-only Kontext.
 
 ### Auth-Flow
 

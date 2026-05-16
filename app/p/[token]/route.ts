@@ -3,8 +3,8 @@ import React from 'react';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { prisma } from '@/lib/prisma';
 import { AngebotPdf, type AnwendungItem, type PreisEntry } from '@/features/angebot/AngebotPdf';
-import { ExpertenPdf } from '@/features/angebot/ExpertenPdf';
 import type { AnwendungSlug } from '@/data/anwendungen';
+import { MITGLIEDSCHAFTEN, type Mitgliedschaft } from '@/data/preise';
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -39,47 +39,40 @@ export async function GET(_req: Request, { params }: Params) {
       begruendung: a.begruendung,
     }));
 
+  const preisSnapshot =
+    typeof empfehlung.preisSnapshot === 'object' &&
+    empfehlung.preisSnapshot !== null &&
+    !Array.isArray(empfehlung.preisSnapshot)
+      ? (empfehlung.preisSnapshot as unknown as Record<string, PreisEntry>)
+      : {};
+
+  const mitgliedschaft: Mitgliedschaft | null =
+    typeof empfehlung.mitgliedschaft === 'string'
+      ? (MITGLIEDSCHAFTEN.find((m) => m.id === empfehlung.mitgliedschaft) ?? null)
+      : null;
+
   const kundenName = `${empfehlung.customer.vorname} ${empfehlung.customer.nachname}`;
   const safeName = empfehlung.customer.nachname.toLowerCase().replace(/[^a-z0-9]/g, '-');
 
-  let element: React.ReactElement<{ children?: React.ReactNode }>;
-
-  if (empfehlung.typ === 'experte') {
-    element = React.createElement(ExpertenPdf, {
-      kundenName,
-      erstelltAm: empfehlung.createdAt,
-      anwendungen,
-      einleitung: empfehlung.einleitung,
-      zusatzhinweis: empfehlung.zusatzhinweis,
-    }) as unknown as React.ReactElement<{ children?: React.ReactNode }>;
-  } else {
-    const preisSnapshot =
-      typeof empfehlung.preisSnapshot === 'object' &&
-      empfehlung.preisSnapshot !== null &&
-      !Array.isArray(empfehlung.preisSnapshot)
-        ? (empfehlung.preisSnapshot as unknown as Record<string, PreisEntry>)
-        : {};
-
-    element = React.createElement(AngebotPdf, {
-      kundenName,
-      erstelltAm: empfehlung.createdAt,
-      typ: empfehlung.typ,
-      anwendungen,
-      preisSnapshot,
-      zusatzhinweis: empfehlung.zusatzhinweis,
-    }) as unknown as React.ReactElement<{ children?: React.ReactNode }>;
-  }
+  const element = React.createElement(AngebotPdf, {
+    kundenName,
+    erstelltAm: empfehlung.createdAt,
+    typ: empfehlung.typ,
+    anwendungen,
+    preisSnapshot,
+    einleitung: empfehlung.einleitung,
+    zusatzhinweis: empfehlung.zusatzhinweis,
+    mitgliedschaft,
+  }) as unknown as React.ReactElement<{ children?: React.ReactNode }>;
 
   const buffer = await renderToBuffer(
     element as Parameters<typeof renderToBuffer>[0]
   );
 
-  const filePrefix = empfehlung.typ === 'experte' ? 'expertenempfehlung' : 'angebot';
-
   return new Response(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="${filePrefix}-${safeName}.pdf"`,
+      'Content-Disposition': `inline; filename="angebot-${safeName}.pdf"`,
       'Cache-Control': 'private, no-cache',
     },
   });
