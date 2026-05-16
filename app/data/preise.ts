@@ -69,6 +69,13 @@ export const PREISE: Record<PreisKategorie, Preise> = {
   },
 };
 
+export const NEUKUNDEN_ANGEBOT = {
+  sessions: 4,
+  preis: 59,
+  gueltigkeitWochen: 4,
+  hinweis: 'Einmaliges Angebot, keine Verlängerung. 4 Sessions frei aufteilbar.',
+};
+
 export const SLUG_KATEGORIE: Record<AnwendungSlug, PreisKategorie> = {
   eisbox: 'regenerate',
   redlight: 'regenerate',

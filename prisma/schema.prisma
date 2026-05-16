@@ -99,7 +99,6 @@ model Empfehlung {
 enum EmpfehlungTyp {
   neukunde
   folge
-  experte
 }
 
 model Note {

@@ -7,7 +7,7 @@ import { PREISE, SLUG_KATEGORIE } from '@/data/preise';
 const VALID_SLUGS = ['eisbox', 'redlight', 'infrarotsauna', 'boa-lymphmassage', 'armstrong', 'beckenbodenstuhl', 'cryoshaper'] as const;
 
 const postSchema = z.object({
-  typ: z.enum(['neukunde', 'folge', 'experte']),
+  typ: z.enum(['neukunde', 'folge']),
   anwendungen: z.array(z.object({
     slug: z.enum(VALID_SLUGS),
     haeufigkeitText: z.string(),
