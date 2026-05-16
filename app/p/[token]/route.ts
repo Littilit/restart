@@ -4,6 +4,7 @@ import { renderToBuffer } from '@react-pdf/renderer';
 import { prisma } from '@/lib/prisma';
 import { AngebotPdf, type AnwendungItem, type PreisEntry } from '@/features/angebot/AngebotPdf';
 import type { AnwendungSlug } from '@/data/anwendungen';
+import { MITGLIEDSCHAFTEN, type Mitgliedschaft } from '@/data/preise';
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -45,6 +46,11 @@ export async function GET(_req: Request, { params }: Params) {
       ? (empfehlung.preisSnapshot as unknown as Record<string, PreisEntry>)
       : {};
 
+  const mitgliedschaft: Mitgliedschaft | null =
+    typeof empfehlung.mitgliedschaft === 'string'
+      ? (MITGLIEDSCHAFTEN.find((m) => m.id === empfehlung.mitgliedschaft) ?? null)
+      : null;
+
   const kundenName = `${empfehlung.customer.vorname} ${empfehlung.customer.nachname}`;
   const safeName = empfehlung.customer.nachname.toLowerCase().replace(/[^a-z0-9]/g, '-');
 
@@ -56,6 +62,7 @@ export async function GET(_req: Request, { params }: Params) {
     preisSnapshot,
     einleitung: empfehlung.einleitung,
     zusatzhinweis: empfehlung.zusatzhinweis,
+    mitgliedschaft,
   }) as unknown as React.ReactElement<{ children?: React.ReactNode }>;
 
   const buffer = await renderToBuffer(

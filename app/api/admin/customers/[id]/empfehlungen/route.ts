@@ -15,6 +15,8 @@ const postSchema = z.object({
   })).min(1),
   einleitung: z.string().optional(),
   zusatzhinweis: z.string().optional(),
+  erkrankungen: z.array(z.string()).optional(),
+  mitgliedschaft: z.enum(['flex', 'premium', 'longevity']).optional(),
 });
 
 type Params = { params: Promise<{ id: string }> };
@@ -27,7 +29,7 @@ export async function POST(request: Request, { params }: Params) {
     if (!parsed.success) {
       return NextResponse.json({ error: 'Ungültige Eingabe', details: parsed.error.flatten() }, { status: 400 });
     }
-    const { typ, anwendungen, einleitung, zusatzhinweis } = parsed.data;
+    const { typ, anwendungen, einleitung, zusatzhinweis, erkrankungen, mitgliedschaft } = parsed.data;
 
     const customer = await prisma.customer.findUnique({ where: { id } });
     if (!customer) {
@@ -47,6 +49,8 @@ export async function POST(request: Request, { params }: Params) {
         anwendungen: anwendungen as Prisma.InputJsonValue,
         einleitung: einleitung?.trim() || null,
         zusatzhinweis: zusatzhinweis?.trim() || null,
+        erkrankungen: (erkrankungen ?? []) as Prisma.InputJsonValue,
+        mitgliedschaft: typ === 'folge' ? (mitgliedschaft ?? null) : null,
         preisSnapshot: preisSnapshotRaw as Prisma.InputJsonValue,
       },
     });

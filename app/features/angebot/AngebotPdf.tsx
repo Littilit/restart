@@ -1,7 +1,7 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { getAnwendung, type AnwendungSlug } from '@/data/anwendungen';
-import { SLUG_KATEGORIE, NEUKUNDEN_ANGEBOT } from '@/data/preise';
+import { SLUG_KATEGORIE, NEUKUNDEN_ANGEBOT, type Mitgliedschaft } from '@/data/preise';
 import { RESEARCH, type Studie } from '@/data/research';
 
 const BLAU = '#00244f';
@@ -216,6 +216,45 @@ const s = StyleSheet.create({
     lineHeight: 1.6,
     textAlign: 'center',
   },
+  ctaMitgliedName: {
+    fontSize: 14,
+    fontFamily: 'Helvetica-Bold',
+    color: 'white',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  ctaMitgliedSessions: {
+    fontSize: 9,
+    color: '#a0bcd8',
+    textAlign: 'center',
+    marginBottom: 8,
+    marginTop: 2,
+  },
+  ctaLaufzeitRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  ctaLaufzeitItem: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  ctaLaufzeitMonate: {
+    fontSize: 8,
+    color: '#a0bcd8',
+    textAlign: 'center',
+  },
+  ctaLaufzeitPreis: {
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: 'white',
+    textAlign: 'center',
+    marginTop: 2,
+  },
   // Upsell
   upsellBox: {
     borderWidth: 1,
@@ -359,6 +398,7 @@ export interface AngebotPdfProps {
   preisSnapshot: Record<string, PreisEntry>;
   zusatzhinweis?: string | null;
   einleitung?: string | null;
+  mitgliedschaft?: Mitgliedschaft | null;
 }
 
 export function AngebotPdf({
@@ -369,6 +409,7 @@ export function AngebotPdf({
   preisSnapshot,
   zusatzhinweis,
   einleitung,
+  mitgliedschaft,
 }: AngebotPdfProps) {
   const coreAnwendungen = anwendungen.filter((a) => {
     try { return getAnwendung(a.slug).kategorie === 'longevity'; } catch { return false; }
@@ -501,6 +542,28 @@ export function AngebotPdf({
               </Text>
               <Text style={s.ctaHint}>{NEUKUNDEN_ANGEBOT.hinweis}</Text>
               <Text style={s.ctaHint}>Frei aufteilbar auf alle Core-Anwendungen.</Text>
+            </>
+          ) : mitgliedschaft ? (
+            <>
+              <Text style={s.ctaFolgeTitle}>
+                Deine Mitgliedschaft – die wirtschaftlich sinnvollste Langfristlösung
+              </Text>
+              <Text style={s.ctaMitgliedName}>{mitgliedschaft.name}</Text>
+              <Text style={s.ctaMitgliedSessions}>{mitgliedschaft.inkludierteSessions}</Text>
+              {mitgliedschaft.zusatzSession !== null && (
+                <Text style={s.ctaHint}>
+                  Jede weitere Session: {mitgliedschaft.zusatzSession.toFixed(2).replace('.', ',')} €
+                </Text>
+              )}
+              <View style={s.ctaLaufzeitRow}>
+                {mitgliedschaft.laufzeiten.map((lz) => (
+                  <View key={lz.monate} style={s.ctaLaufzeitItem}>
+                    <Text style={s.ctaLaufzeitMonate}>{lz.monate} {lz.monate === 1 ? 'Monat' : 'Monate'}</Text>
+                    <Text style={s.ctaLaufzeitPreis}>{lz.monatsbeitrag.toFixed(2).replace('.', ',')} €</Text>
+                  </View>
+                ))}
+              </View>
+              <Text style={s.ctaHint}>monatlich, keine Mindestlaufzeit außer gewählter Laufzeit</Text>
             </>
           ) : (
             <>

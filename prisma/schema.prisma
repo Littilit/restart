@@ -88,6 +88,8 @@ model Empfehlung {
   anwendungen   Json
   einleitung    String?       @db.Text
   zusatzhinweis String?       @db.Text
+  erkrankungen  Json          @default("[]")
+  mitgliedschaft String?
   preisSnapshot Json          @default("{}")
   shareToken    String        @unique @default(cuid())
   pdfErzeugtAm  DateTime?

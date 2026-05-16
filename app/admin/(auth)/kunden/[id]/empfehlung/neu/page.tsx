@@ -40,6 +40,9 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
 
   let initial: { slug: AnwendungSlug; haeufigkeitText: string; begruendung: string }[];
 
+  let initialErkrankungen: string[] = [];
+  let initialMitgliedschaft = '';
+
   if (typ === 'folge' && customer.empfehlungen.length > 0) {
     const letzteEmpfehlung = customer.empfehlungen[0];
     const raw = Array.isArray(letzteEmpfehlung.anwendungen)
@@ -63,6 +66,14 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
           begruendung: o.begruendung as string,
         };
       });
+
+    const rawErkrankungen = letzteEmpfehlung.erkrankungen;
+    if (Array.isArray(rawErkrankungen)) {
+      initialErkrankungen = rawErkrankungen.filter((e): e is string => typeof e === 'string');
+    }
+    if (typeof letzteEmpfehlung.mitgliedschaft === 'string') {
+      initialMitgliedschaft = letzteEmpfehlung.mitgliedschaft;
+    }
   } else {
     initial = vorschlag.map((entry) => ({
       slug: entry.slug,
@@ -97,6 +108,12 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
         typ={typ}
         initial={initial}
         initialEinleitung={initialEinleitung}
+        initialMainFocus={mainFocus}
+        initialMainFocus2={mainFocus2}
+        initialChamber2={chamber2}
+        initialChamber2b={chamber2b}
+        initialErkrankungen={initialErkrankungen}
+        initialMitgliedschaft={initialMitgliedschaft}
       />
     </div>
   );
