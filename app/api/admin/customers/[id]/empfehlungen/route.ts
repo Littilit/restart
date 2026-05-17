@@ -17,6 +17,8 @@ const postSchema = z.object({
   zusatzhinweis: z.string().optional(),
   erkrankungen: z.array(z.string()).optional(),
   mitgliedschaft: z.enum(['flex', 'premium', 'longevity']).optional(),
+  sessionsProMonat: z.number().int().positive().optional(),
+  gueltigBis: z.string().optional(),
 });
 
 type Params = { params: Promise<{ id: string }> };
@@ -29,7 +31,12 @@ export async function POST(request: Request, { params }: Params) {
     if (!parsed.success) {
       return NextResponse.json({ error: 'Ungültige Eingabe', details: parsed.error.flatten() }, { status: 400 });
     }
-    const { typ, anwendungen, einleitung, zusatzhinweis, erkrankungen, mitgliedschaft } = parsed.data;
+    const { typ, anwendungen, einleitung, zusatzhinweis, erkrankungen, mitgliedschaft, sessionsProMonat, gueltigBis } = parsed.data;
+
+    const gueltigBisDate = gueltigBis ? new Date(gueltigBis) : null;
+    if (gueltigBisDate && Number.isNaN(gueltigBisDate.getTime())) {
+      return NextResponse.json({ error: 'Ungültiges Datum' }, { status: 400 });
+    }
 
     const customer = await prisma.customer.findUnique({ where: { id } });
     if (!customer) {
@@ -51,7 +58,9 @@ export async function POST(request: Request, { params }: Params) {
         zusatzhinweis: zusatzhinweis?.trim() || null,
         erkrankungen: (erkrankungen ?? []) as Prisma.InputJsonValue,
         mitgliedschaft: typ === 'folge' ? (mitgliedschaft ?? null) : null,
+        sessionsProMonat: typ === 'folge' ? (sessionsProMonat ?? null) : null,
         preisSnapshot: preisSnapshotRaw as Prisma.InputJsonValue,
+        gueltigBis: gueltigBisDate,
       },
     });
 

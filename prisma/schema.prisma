@@ -93,6 +93,10 @@ model Empfehlung {
   preisSnapshot Json          @default("{}")
   shareToken    String        @unique @default(cuid())
   pdfErzeugtAm  DateTime?
+  sessionsProMonat Int?
+  gueltigBis    DateTime?
+  geoeffnetAm   DateTime?
+  zugesagtAm    DateTime?
   createdAt     DateTime      @default(now())
 
   @@index([customerId])

@@ -39,7 +39,6 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
   const vorschlag = computeEmpfehlungen(mainFocus, chamber2, mainFocus2, chamber2b);
 
   let initial: { slug: AnwendungSlug; haeufigkeitText: string; begruendung: string }[];
-
   let initialErkrankungen: string[] = [];
   let initialMitgliedschaft = '';
 
@@ -86,6 +85,11 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
     ? `${customer.vorname} ${customer.nachname} hat im Fokus: ${mainFocus}${mainFocus2 ? ` und ${mainFocus2}` : ''}. Die folgende Empfehlung basiert auf den Anamnese-Daten und der wissenschaftlichen Studienlage zu den ausgewählten Anwendungen.`
     : '';
 
+  // Gültig-bis-Default: Neukunde +28 Tage, Folge +14 Tage.
+  const gueltigDatum = new Date();
+  gueltigDatum.setDate(gueltigDatum.getDate() + (typ === 'neukunde' ? 28 : 14));
+  const initialGueltigBis = gueltigDatum.toISOString().slice(0, 10);
+
   const typLabel = typ === 'neukunde' ? 'Neukunden-Angebot' : 'Folgeangebot';
 
   return (
@@ -114,6 +118,7 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
         initialChamber2b={chamber2b}
         initialErkrankungen={initialErkrankungen}
         initialMitgliedschaft={initialMitgliedschaft}
+        initialGueltigBis={initialGueltigBis}
       />
     </div>
   );

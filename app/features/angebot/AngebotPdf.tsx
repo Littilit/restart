@@ -1,29 +1,31 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
-import { getAnwendung, type AnwendungSlug } from '@/data/anwendungen';
+import { getAnwendung } from '@/data/anwendungen';
 import { SLUG_KATEGORIE, NEUKUNDEN_ANGEBOT, type Mitgliedschaft } from '@/data/preise';
 import { RESEARCH, type Studie } from '@/data/research';
+import { SOCIAL_PROOF } from '@/data/socialproof';
+import {
+  berechnePreisvergleich,
+  besteLaufzeit,
+  formatEuro,
+} from './mitgliedschaft-logik';
+import { KATEGORIE_LABEL } from './kategorie-label';
+import type { AnwendungItem, PreisEntry } from './angebot-data';
+
+export type { AnwendungItem, PreisEntry };
 
 const BLAU = '#00244f';
 const TUERKIS = '#00a6e5';
 const GRAU = '#6b7280';
 const HELLGRAU = '#f3f4f6';
 const DUNKELGRAU = '#374151';
+const GRUEN = '#0f7b3f';
 
 const VISION_TEXT =
   'Wir verlassen uns heute oft zu sehr auf schnelle Lösungen von außen, anstatt die unglaublichen Fähigkeiten unseres eigenen Körpers zu nutzen. ' +
   'Meine Vision für den Cryopoint Augsburg ist es, dir die Eigenverantwortung für deine Gesundheit zurückzugeben. ' +
   'Ich möchte Teil deiner Lösung sein – egal, ob du Wege suchst, endlich wieder beschwerdefrei zu leben oder deine volle Leistungsfähigkeit auszuschöpfen. ' +
   'Wir bieten dir die Ressourcen, damit du die Veränderung selbst in die Hand nehmen kannst.';
-
-const KATEGORIE_NAME: Record<string, string> = {
-  regenerate: 'Regenerate',
-  armstrong: 'Armstrong MMS',
-  cryoshaper_focus: 'Cryoshaper Focus',
-  cryoshaper_face: 'Cryoshaper Face',
-  cryoshaper_body: 'Cryoshaper Body',
-  beckenbodenstuhl: 'Beckenbodenstuhl MMS',
-};
 
 function formatPreis(preis: number): string {
   if (preis === 0) return 'auf Anfrage';
@@ -84,6 +86,16 @@ const s = StyleSheet.create({
     color: GRAU,
     marginTop: 2,
   },
+  gueltigBadge: {
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
+    color: '#92400e',
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 3,
+    marginTop: 3,
+  },
   visionBox: {
     backgroundColor: '#eef4ff',
     borderLeftWidth: 4,
@@ -119,7 +131,6 @@ const s = StyleSheet.create({
     lineHeight: 1.6,
     marginBottom: 12,
   },
-  // Tabelle Core-Stack
   tableHeaderRow: {
     flexDirection: 'row',
     backgroundColor: BLAU,
@@ -167,14 +178,27 @@ const s = StyleSheet.create({
     color: BLAU,
   },
   tableWrapper: {
-    marginBottom: 20,
+    marginBottom: 14,
   },
-  // CTA-Box
+  bridgeBox: {
+    backgroundColor: '#eef4ff',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 14,
+  },
+  bridgeText: {
+    fontSize: 9.5,
+    color: BLAU,
+    lineHeight: 1.55,
+  },
+  bridgeBold: {
+    fontFamily: 'Helvetica-Bold',
+  },
   ctaBox: {
     backgroundColor: BLAU,
     borderRadius: 6,
     padding: 18,
-    marginBottom: 20,
+    marginBottom: 14,
     alignItems: 'center',
   },
   ctaTitle: {
@@ -203,6 +227,13 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginTop: 3,
   },
+  ctaGueltig: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: '#fcd34d',
+    textAlign: 'center',
+    marginTop: 6,
+  },
   ctaFolgeTitle: {
     fontSize: 12,
     fontFamily: 'Helvetica-Bold',
@@ -216,11 +247,20 @@ const s = StyleSheet.create({
     lineHeight: 1.6,
     textAlign: 'center',
   },
+  ctaEmpfBadge: {
+    fontSize: 7.5,
+    fontFamily: 'Helvetica-Bold',
+    color: BLAU,
+    backgroundColor: TUERKIS,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
+    marginBottom: 4,
+  },
   ctaMitgliedName: {
     fontSize: 14,
     fontFamily: 'Helvetica-Bold',
     color: 'white',
-    marginTop: 8,
     textAlign: 'center',
   },
   ctaMitgliedSessions: {
@@ -243,6 +283,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
+  ctaLaufzeitItemBest: {
+    borderWidth: 1,
+    borderColor: TUERKIS,
+  },
   ctaLaufzeitMonate: {
     fontSize: 8,
     color: '#a0bcd8',
@@ -255,7 +299,52 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
-  // Upsell
+  ctaLaufzeitBest: {
+    fontSize: 6.5,
+    fontFamily: 'Helvetica-Bold',
+    color: TUERKIS,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  vergleichBox: {
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    backgroundColor: '#f0fdf4',
+    borderRadius: 6,
+    padding: 12,
+    marginBottom: 18,
+  },
+  vergleichTitle: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: GRUEN,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  vergleichRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 3,
+  },
+  vergleichLabel: {
+    fontSize: 9.5,
+    color: DUNKELGRAU,
+  },
+  vergleichWert: {
+    fontSize: 9.5,
+    fontFamily: 'Helvetica-Bold',
+    color: DUNKELGRAU,
+  },
+  vergleichErsparnis: {
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: GRUEN,
+    marginTop: 5,
+    paddingTop: 5,
+    borderTopWidth: 1,
+    borderTopColor: '#bbf7d0',
+  },
   upsellBox: {
     borderWidth: 1,
     borderStyle: 'dashed',
@@ -286,7 +375,35 @@ const s = StyleSheet.create({
     color: GRAU,
     lineHeight: 1.5,
   },
-  // Preise
+  proofBox: {
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 6,
+    padding: 12,
+    marginBottom: 18,
+  },
+  proofTop: {
+    fontSize: 10,
+    fontFamily: 'Helvetica-Bold',
+    color: '#92400e',
+    marginBottom: 6,
+  },
+  proofTestimonial: {
+    marginTop: 6,
+  },
+  proofText: {
+    fontSize: 9,
+    color: DUNKELGRAU,
+    fontStyle: 'italic',
+    lineHeight: 1.55,
+  },
+  proofName: {
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
+    color: GRAU,
+    marginTop: 2,
+  },
   section: {
     marginBottom: 18,
   },
@@ -330,7 +447,6 @@ const s = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
   },
-  // Quellenverzeichnis
   literaturBlock: {
     marginBottom: 5,
   },
@@ -355,7 +471,6 @@ const s = StyleSheet.create({
     lineHeight: 1.4,
     fontStyle: 'italic',
   },
-  // Footer
   footer: {
     position: 'absolute',
     bottom: 24,
@@ -378,18 +493,6 @@ const s = StyleSheet.create({
   },
 });
 
-export interface AnwendungItem {
-  slug: AnwendungSlug;
-  haeufigkeitText: string;
-  begruendung: string;
-}
-
-export interface PreisEntry {
-  probe: number;
-  einzel: number;
-  karten: { menge: number; preis: number }[];
-}
-
 export interface AngebotPdfProps {
   kundenName: string;
   erstelltAm: Date;
@@ -399,6 +502,8 @@ export interface AngebotPdfProps {
   zusatzhinweis?: string | null;
   einleitung?: string | null;
   mitgliedschaft?: Mitgliedschaft | null;
+  sessionsProMonat?: number | null;
+  gueltigBis?: Date | null;
 }
 
 export function AngebotPdf({
@@ -410,6 +515,8 @@ export function AngebotPdf({
   zusatzhinweis,
   einleitung,
   mitgliedschaft,
+  sessionsProMonat,
+  gueltigBis,
 }: AngebotPdfProps) {
   const coreAnwendungen = anwendungen.filter((a) => {
     try { return getAnwendung(a.slug).kategorie === 'longevity'; } catch { return false; }
@@ -417,6 +524,13 @@ export function AngebotPdf({
   const upsellAnwendungen = anwendungen.filter((a) => {
     try { return getAnwendung(a.slug).kategorie === 'bodyforming'; } catch { return false; }
   });
+
+  const spm = sessionsProMonat ?? 0;
+  const vergleich =
+    typ === 'folge' && mitgliedschaft && spm > 0
+      ? berechnePreisvergleich(spm, mitgliedschaft)
+      : null;
+  const beste = mitgliedschaft ? besteLaufzeit(mitgliedschaft) : null;
 
   const allStudien: Array<{ studie: Studie; globalNr: number }> = [];
   let globalNr = 1;
@@ -439,6 +553,7 @@ export function AngebotPdf({
   }
 
   const hasPreise = Object.keys(preisSnapshot).length > 0;
+  const zeigeSocialProof = !SOCIAL_PROOF.platzhalter;
 
   function renderTableRow(a: AnwendungItem, index: number) {
     let anwName: string = a.slug;
@@ -456,11 +571,6 @@ export function AngebotPdf({
             <Text style={s.tableCellBegr}>{a.begruendung}</Text>
           ) : null}
         </View>
-        <View style={[s.tableCell, s.colFrequenz]}>
-          <Text style={s.tableCellFreq}>
-            {a.haeufigkeitText || research?.sessions || '–'}
-          </Text>
-        </View>
       </View>
     );
   }
@@ -471,9 +581,7 @@ export function AngebotPdf({
     const research = RESEARCH[a.slug];
     return (
       <View key={a.slug} style={s.upsellItem}>
-        <Text style={s.upsellName}>
-          {anwName}{a.haeufigkeitText ? ` · ${a.haeufigkeitText}` : ''}
-        </Text>
+        <Text style={s.upsellName}>{anwName}</Text>
         <Text style={s.upsellText}>
           {a.begruendung || research?.nutzen || '–'}
         </Text>
@@ -496,6 +604,9 @@ export function AngebotPdf({
             </Text>
             <Text style={s.headerName}>{kundenName}</Text>
             <Text style={s.headerDate}>{formatDatum(erstelltAm)}</Text>
+            {gueltigBis ? (
+              <Text style={s.gueltigBadge}>Gültig bis {formatDatum(gueltigBis)}</Text>
+            ) : null}
           </View>
         </View>
 
@@ -521,11 +632,20 @@ export function AngebotPdf({
               <View style={[s.tableHeaderCell, s.colNutzen]}>
                 <Text>Dein Nutzen</Text>
               </View>
-              <View style={[s.tableHeaderCell, s.colFrequenz]}>
-                <Text>Frequenz</Text>
-              </View>
             </View>
             {coreAnwendungen.map((a, i) => renderTableRow(a, i))}
+          </View>
+        )}
+
+        {/* Protokoll → Mitgliedschaft-Brücke */}
+        {typ === 'folge' && mitgliedschaft && spm > 0 && (
+          <View style={s.bridgeBox}>
+            <Text style={s.bridgeText}>
+              Dein Plan umfasst rund{' '}
+              <Text style={s.bridgeBold}>{spm} Sessions pro Monat</Text>.
+              {' '}Genau dafür ist der{' '}
+              <Text style={s.bridgeBold}>{mitgliedschaft.name}</Text> gemacht.
+            </Text>
           </View>
         )}
 
@@ -542,12 +662,16 @@ export function AngebotPdf({
               </Text>
               <Text style={s.ctaHint}>{NEUKUNDEN_ANGEBOT.hinweis}</Text>
               <Text style={s.ctaHint}>Frei aufteilbar auf alle Core-Anwendungen.</Text>
+              {gueltigBis ? (
+                <Text style={s.ctaGueltig}>Sichere dir das Special bis {formatDatum(gueltigBis)}</Text>
+              ) : null}
             </>
           ) : mitgliedschaft ? (
             <>
               <Text style={s.ctaFolgeTitle}>
                 Deine Mitgliedschaft – die wirtschaftlich sinnvollste Langfristlösung
               </Text>
+              <Text style={s.ctaEmpfBadge}>FÜR DICH EMPFOHLEN</Text>
               <Text style={s.ctaMitgliedName}>{mitgliedschaft.name}</Text>
               <Text style={s.ctaMitgliedSessions}>{mitgliedschaft.inkludierteSessions}</Text>
               {mitgliedschaft.zusatzSession !== null && (
@@ -556,14 +680,24 @@ export function AngebotPdf({
                 </Text>
               )}
               <View style={s.ctaLaufzeitRow}>
-                {mitgliedschaft.laufzeiten.map((lz) => (
-                  <View key={lz.monate} style={s.ctaLaufzeitItem}>
-                    <Text style={s.ctaLaufzeitMonate}>{lz.monate} {lz.monate === 1 ? 'Monat' : 'Monate'}</Text>
-                    <Text style={s.ctaLaufzeitPreis}>{lz.monatsbeitrag.toFixed(2).replace('.', ',')} €</Text>
-                  </View>
-                ))}
+                {mitgliedschaft.laufzeiten.map((lz) => {
+                  const istBest = beste ? lz.monate === beste.monate : false;
+                  return (
+                    <View
+                      key={lz.monate}
+                      style={[s.ctaLaufzeitItem, istBest ? s.ctaLaufzeitItemBest : {}]}
+                    >
+                      <Text style={s.ctaLaufzeitMonate}>{lz.monate} {lz.monate === 1 ? 'Monat' : 'Monate'}</Text>
+                      <Text style={s.ctaLaufzeitPreis}>{lz.monatsbeitrag.toFixed(2).replace('.', ',')} €</Text>
+                      {istBest ? <Text style={s.ctaLaufzeitBest}>BESTES PREIS-LEISTUNGS-VERHÄLTNIS</Text> : null}
+                    </View>
+                  );
+                })}
               </View>
               <Text style={s.ctaHint}>monatlich, keine Mindestlaufzeit außer gewählter Laufzeit</Text>
+              {gueltigBis ? (
+                <Text style={s.ctaGueltig}>Dieses Angebot gilt bis {formatDatum(gueltigBis)}</Text>
+              ) : null}
             </>
           ) : (
             <>
@@ -574,9 +708,37 @@ export function AngebotPdf({
                 Als regelmäßiger Nutzer empfehlen wir dir eine Mitgliedschaft – unbegrenzt oder mit Monatskontingent.
                 So holst du das Maximum aus deiner Routine heraus, zu den besten Konditionen.
               </Text>
+              {gueltigBis ? (
+                <Text style={s.ctaGueltig}>Dieses Angebot gilt bis {formatDatum(gueltigBis)}</Text>
+              ) : null}
             </>
           )}
         </View>
+
+        {/* Preisvergleich */}
+        {vergleich && (
+          <View style={s.vergleichBox}>
+            <Text style={s.vergleichTitle}>Was sich für dich rechnet</Text>
+            <View style={s.vergleichRow}>
+              <Text style={s.vergleichLabel}>
+                Einzeln gebucht ({vergleich.sessions} Sessions × {formatEuro(vergleich.einzelpreis)})
+              </Text>
+              <Text style={s.vergleichWert}>{formatEuro(vergleich.einzelProMonat)} / Monat</Text>
+            </View>
+            <View style={s.vergleichRow}>
+              <Text style={s.vergleichLabel}>
+                Mit {mitgliedschaft?.name} ({vergleich.laufzeitMonate} Monate)
+              </Text>
+              <Text style={s.vergleichWert}>{formatEuro(vergleich.mitgliedschaftProMonat)} / Monat</Text>
+            </View>
+            {vergleich.ersparnisProMonat > 0 && (
+              <Text style={s.vergleichErsparnis}>
+                Du sparst {formatEuro(vergleich.ersparnisProMonat)} pro Monat
+                {' '}– rund {formatEuro(vergleich.ersparnisProJahr)} im Jahr.
+              </Text>
+            )}
+          </View>
+        )}
 
         {/* Upsell */}
         {upsellAnwendungen.length > 0 && (
@@ -586,13 +748,30 @@ export function AngebotPdf({
           </View>
         )}
 
+        {/* Social Proof */}
+        {zeigeSocialProof && (
+          <View style={s.proofBox}>
+            <Text style={s.proofTop}>
+              {SOCIAL_PROOF.bewertung.toFixed(1).replace('.', ',')} / 5 bei {SOCIAL_PROOF.bewertungQuelle}
+              {SOCIAL_PROOF.bewertungAnzahl > 0 ? ` (${SOCIAL_PROOF.bewertungAnzahl} Bewertungen)` : ''}
+              {'  ·  '}{SOCIAL_PROOF.mitgliederText}
+            </Text>
+            {SOCIAL_PROOF.testimonials.map((t, i) => (
+              <View key={i} style={s.proofTestimonial}>
+                <Text style={s.proofText}>{`"${t.text}"`}</Text>
+                <Text style={s.proofName}>— {t.name}, {t.kontext}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Preisübersicht */}
         {hasPreise && (
           <View style={s.section}>
             <Text style={s.sectionTitle}>Preisübersicht</Text>
             {Object.entries(preisSnapshot).map(([kat, preise]) => {
               const namen = kategorieToKurzNamen[kat];
-              const label = KATEGORIE_NAME[kat] ?? kat;
+              const label = KATEGORIE_LABEL[kat] ?? kat;
               return (
                 <View key={kat} style={s.preisBlock}>
                   <Text style={s.preisKat}>

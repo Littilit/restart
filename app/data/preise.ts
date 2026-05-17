@@ -4,6 +4,7 @@ export interface Mitgliedschaft {
   id: 'flex' | 'premium' | 'longevity';
   name: string;
   inkludierteSessions: string;
+  inkludierteAnzahl: number | null;
   zusatzSession: number | null;
   laufzeiten: { monate: number; monatsbeitrag: number }[];
 }
@@ -13,6 +14,7 @@ export const MITGLIEDSCHAFTEN: Mitgliedschaft[] = [
     id: 'flex',
     name: 'FLEX-Club',
     inkludierteSessions: '2 Sessions / Monat',
+    inkludierteAnzahl: 2,
     zusatzSession: 9.90,
     laufzeiten: [
       { monate: 1, monatsbeitrag: 39.90 },
@@ -24,6 +26,7 @@ export const MITGLIEDSCHAFTEN: Mitgliedschaft[] = [
     id: 'premium',
     name: 'Premium-Club',
     inkludierteSessions: '4 Sessions / Monat',
+    inkludierteAnzahl: 4,
     zusatzSession: 9.90,
     laufzeiten: [
       { monate: 1, monatsbeitrag: 79.90 },
@@ -35,6 +38,7 @@ export const MITGLIEDSCHAFTEN: Mitgliedschaft[] = [
     id: 'longevity',
     name: 'Longevity-Club',
     inkludierteSessions: 'Unbegrenzt',
+    inkludierteAnzahl: null,
     zusatzSession: null,
     laufzeiten: [
       { monate: 1, monatsbeitrag: 149.90 },

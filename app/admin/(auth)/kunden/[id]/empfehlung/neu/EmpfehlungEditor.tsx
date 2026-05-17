@@ -11,6 +11,7 @@ import { KATEGORIEN } from '@/features/anamnese/kategorien';
 import { FrageBlock } from '@/features/anamnese/FrageBlock';
 import { ERKRANKUNGEN, anwendungenFuerErkrankungen, einleitungFuerErkrankungen } from '@/data/erkrankungen';
 import { MITGLIEDSCHAFTEN } from '@/data/preise';
+import { empfehleMitgliedschaftId } from '@/features/angebot/mitgliedschaft-logik';
 
 interface AnwendungEintrag {
   slug: AnwendungSlug;
@@ -29,6 +30,8 @@ interface Props {
   initialChamber2b?: Record<string, string>;
   initialErkrankungen?: string[];
   initialMitgliedschaft?: string;
+  initialSessionsProMonat?: number | null;
+  initialGueltigBis?: string;
 }
 
 export default function EmpfehlungEditor({
@@ -42,6 +45,8 @@ export default function EmpfehlungEditor({
   initialChamber2b = {},
   initialErkrankungen = [],
   initialMitgliedschaft = '',
+  initialSessionsProMonat = null,
+  initialGueltigBis = '',
 }: Props) {
   const router = useRouter();
 
@@ -61,6 +66,8 @@ export default function EmpfehlungEditor({
   const [chamber2b, setChamber2b] = useState<Record<string, string>>(initialChamber2b);
   const [erkrankungen, setErkrankungen] = useState<string[]>(initialErkrankungen);
   const [mitgliedschaft, setMitgliedschaft] = useState<string>(initialMitgliedschaft);
+  const [sessionsProMonat, setSessionsProMonat] = useState<number | null>(initialSessionsProMonat);
+  const [gueltigBis, setGueltigBis] = useState<string>(initialGueltigBis);
 
   const verfuegbar = ANWENDUNGEN.filter((a) => !eintraege.some((e) => e.slug === a.slug));
 
@@ -87,7 +94,7 @@ export default function EmpfehlungEditor({
         if (bestehend) return bestehend;
         return {
           slug,
-          haeufigkeitText: RESEARCH[slug]?.sessions ?? vorschlag.find((v) => v.slug === slug)?.sessions ?? '',
+          haeufigkeitText: '',
           begruendung: '',
         };
       })
@@ -118,11 +125,7 @@ export default function EmpfehlungEditor({
     if (!a) return;
     setEintraege((prev) => [
       ...prev,
-      {
-        slug: a.slug,
-        haeufigkeitText: RESEARCH[a.slug as AnwendungSlug]?.sessions ?? '',
-        begruendung: '',
-      },
+      { slug: a.slug, haeufigkeitText: '', begruendung: '' },
     ]);
     setAddSlug('');
   }
@@ -162,6 +165,8 @@ export default function EmpfehlungEditor({
           zusatzhinweis: zusatzhinweis.trim() || undefined,
           erkrankungen: erkrankungen.length > 0 ? erkrankungen : undefined,
           mitgliedschaft: typ === 'folge' && mitgliedschaft ? mitgliedschaft : undefined,
+          sessionsProMonat: typ === 'folge' && sessionsProMonat ? sessionsProMonat : undefined,
+          gueltigBis: gueltigBis || undefined,
         }),
       });
 
@@ -255,16 +260,6 @@ export default function EmpfehlungEditor({
         )}
 
         <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Protokoll / Häufigkeit</label>
-            <input
-              type="text"
-              value={eintrag.haeufigkeitText}
-              onChange={(e) => updateEintrag(index, { haeufigkeitText: e.target.value })}
-              placeholder="z. B. 2–3x pro Woche"
-              className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cp-tuerkis"
-            />
-          </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
               Individuelle Begründung
@@ -421,11 +416,41 @@ export default function EmpfehlungEditor({
               </div>
             </div>
 
-            {/* Mitgliedschaft (nur Folge) */}
+            {/* Sessions pro Monat + Mitgliedschaft (nur Folge) */}
             {typ === 'folge' && (
+              <div className="space-y-5">
               <div>
-                <p className="text-xs font-semibold text-cp-tuerkis uppercase tracking-wider mb-3">
+                <p className="text-xs font-semibold text-cp-tuerkis uppercase tracking-wider mb-1">
+                  Sessions pro Monat
+                </p>
+                <p className="text-xs text-gray-400 mb-2">
+                  1 Session = 1 Anwendung (z. B. 1× Eisbox). Aus der Zahl ergibt sich die Mitgliedschaft automatisch.
+                </p>
+                <input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={sessionsProMonat ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                    setSessionsProMonat(val);
+                    if (val && val > 0) setMitgliedschaft(empfehleMitgliedschaftId(val));
+                  }}
+                  placeholder="z. B. 4"
+                  className="w-28 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cp-tuerkis"
+                />
+                {sessionsProMonat && sessionsProMonat > 0 && (
+                  <p className="mt-1 text-xs text-cp-tuerkis">
+                    Vorschlag: {empfehleMitgliedschaftId(sessionsProMonat) === 'flex' ? 'FLEX-Club' : empfehleMitgliedschaftId(sessionsProMonat) === 'premium' ? 'Premium-Club' : 'Longevity-Club'}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-cp-tuerkis uppercase tracking-wider mb-1">
                   Empfohlene Mitgliedschaft
+                </p>
+                <p className="text-xs text-gray-400 mb-3">
+                  Automatisch aus Sessions/Monat – bei Bedarf anpassen.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {MITGLIEDSCHAFTEN.map((m) => (
@@ -447,6 +472,7 @@ export default function EmpfehlungEditor({
                     </button>
                   ))}
                 </div>
+              </div>
               </div>
             )}
 
@@ -547,6 +573,20 @@ export default function EmpfehlungEditor({
           rows={3}
           placeholder="Hinweise zur Reihenfolge, Kontraindikationen, ergänzende Empfehlungen …"
           className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cp-tuerkis"
+        />
+      </div>
+
+      {/* Gültig bis */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          Angebot gültig bis
+          <span className="ml-1 text-gray-400 font-normal">(erzeugt Dringlichkeit im Angebot)</span>
+        </label>
+        <input
+          type="date"
+          value={gueltigBis}
+          onChange={(e) => setGueltigBis(e.target.value)}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cp-tuerkis"
         />
       </div>
 
