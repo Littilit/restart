@@ -29,6 +29,7 @@ interface Props {
   initialChamber2b?: Record<string, string>;
   initialErkrankungen?: string[];
   initialMitgliedschaft?: string;
+  initialGueltigBis?: string;
 }
 
 export default function EmpfehlungEditor({
@@ -42,6 +43,7 @@ export default function EmpfehlungEditor({
   initialChamber2b = {},
   initialErkrankungen = [],
   initialMitgliedschaft = '',
+  initialGueltigBis = '',
 }: Props) {
   const router = useRouter();
 
@@ -61,6 +63,7 @@ export default function EmpfehlungEditor({
   const [chamber2b, setChamber2b] = useState<Record<string, string>>(initialChamber2b);
   const [erkrankungen, setErkrankungen] = useState<string[]>(initialErkrankungen);
   const [mitgliedschaft, setMitgliedschaft] = useState<string>(initialMitgliedschaft);
+  const [gueltigBis, setGueltigBis] = useState<string>(initialGueltigBis);
 
   const verfuegbar = ANWENDUNGEN.filter((a) => !eintraege.some((e) => e.slug === a.slug));
 
@@ -162,6 +165,7 @@ export default function EmpfehlungEditor({
           zusatzhinweis: zusatzhinweis.trim() || undefined,
           erkrankungen: erkrankungen.length > 0 ? erkrankungen : undefined,
           mitgliedschaft: typ === 'folge' && mitgliedschaft ? mitgliedschaft : undefined,
+          gueltigBis: gueltigBis || undefined,
         }),
       });
 
@@ -424,8 +428,11 @@ export default function EmpfehlungEditor({
             {/* Mitgliedschaft (nur Folge) */}
             {typ === 'folge' && (
               <div>
-                <p className="text-xs font-semibold text-cp-tuerkis uppercase tracking-wider mb-3">
+                <p className="text-xs font-semibold text-cp-tuerkis uppercase tracking-wider mb-1">
                   Empfohlene Mitgliedschaft
+                </p>
+                <p className="text-xs text-gray-400 mb-3">
+                  Vom System aus dem Protokoll vorgeschlagen – bei Bedarf anpassen.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {MITGLIEDSCHAFTEN.map((m) => (
@@ -547,6 +554,20 @@ export default function EmpfehlungEditor({
           rows={3}
           placeholder="Hinweise zur Reihenfolge, Kontraindikationen, ergänzende Empfehlungen …"
           className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cp-tuerkis"
+        />
+      </div>
+
+      {/* Gültig bis */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          Angebot gültig bis
+          <span className="ml-1 text-gray-400 font-normal">(erzeugt Dringlichkeit im Angebot)</span>
+        </label>
+        <input
+          type="date"
+          value={gueltigBis}
+          onChange={(e) => setGueltigBis(e.target.value)}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cp-tuerkis"
         />
       </div>
 

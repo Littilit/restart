@@ -12,6 +12,9 @@ import StammdatenEditor from './StammdatenEditor';
 import KundenCheckIns from '../../../KundenCheckIns';
 import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
 import { DETAIL_FRAGEN } from '@/features/anamnese/fragen';
+import { KATEGORIEN } from '@/features/anamnese/kategorien';
+import { Verkaufsleitfaden } from '@/features/angebot/Verkaufsleitfaden';
+import type { AnwendungSlug } from '@/data/anwendungen';
 import type { Kontraindikation, MainFocus } from '@/features/anamnese/types';
 import type { Frage } from '@/features/anamnese/fragen';
 
@@ -59,6 +62,9 @@ export default async function KundeDetail({ params, searchParams }: Props) {
 
   const allTags = [...new Set(allCustomers.flatMap((c) => c.tags))].sort();
   const latestAnamnese = customer.anamnesen[0];
+  const fokusLabel = latestAnamnese?.mainFocus
+    ? KATEGORIEN.find((k) => k.value === latestAnamnese.mainFocus)?.title ?? null
+    : null;
 
   return (
     <div>
@@ -284,54 +290,100 @@ export default async function KundeDetail({ params, searchParams }: Props) {
           ) : (
             <div className="space-y-3">
               {customer.empfehlungen.map((e) => {
-                const anwendungen = Array.isArray(e.anwendungen) ? e.anwendungen : [];
+                const anwendungenRaw = Array.isArray(e.anwendungen) ? e.anwendungen : [];
+                const anwendungen = anwendungenRaw
+                  .filter(
+                    (a): a is { slug: string; haeufigkeitText: string } =>
+                      typeof a === 'object' &&
+                      a !== null &&
+                      typeof (a as Record<string, unknown>).slug === 'string' &&
+                      typeof (a as Record<string, unknown>).haeufigkeitText === 'string',
+                  )
+                  .map((a) => ({
+                    slug: a.slug as AnwendungSlug,
+                    haeufigkeitText: a.haeufigkeitText,
+                  }));
                 return (
                   <div
                     key={e.id}
-                    className="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between gap-4"
+                    className="bg-white rounded-xl border border-gray-200 p-5 space-y-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          e.typ === 'neukunde'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-emerald-100 text-emerald-800'
-                        }`}
-                      >
-                        {e.typ === 'neukunde' ? 'Neukunden-Angebot' : 'Folgeangebot'}
-                      </span>
-                      <div className="text-sm">
-                        <div className="text-gray-800">
-                          {anwendungen.length} Anwendung{anwendungen.length === 1 ? '' : 'en'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(e.createdAt).toLocaleDateString('de-DE', {
-                            day: '2-digit', month: '2-digit', year: 'numeric',
-                          })}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            e.typ === 'neukunde'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}
+                        >
+                          {e.typ === 'neukunde' ? 'Neukunden-Angebot' : 'Folgeangebot'}
+                        </span>
+                        <div className="text-sm">
+                          <div className="text-gray-800">
+                            {anwendungenRaw.length} Anwendung{anwendungenRaw.length === 1 ? '' : 'en'}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            erstellt {fmtDatum(e.createdAt)}
+                            {e.gueltigBis ? ` · gültig bis ${fmtDatum(e.gueltigBis)}` : ''}
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <a
+                          href={`/p/${e.shareToken}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-cp-tuerkis hover:underline"
+                        >
+                          Angebotsseite
+                        </a>
+                        <a
+                          href={`/p/${e.shareToken}/pdf`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-gray-500 hover:underline"
+                        >
+                          PDF
+                        </a>
+                        <a
+                          href={waUrl(
+                            customer.telefon,
+                            `Dein persönliches Angebot von Cryopoint Augsburg: ${SITE_URL}/p/${e.shareToken}`
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs px-1.5 py-0.5 rounded bg-[#25d366] text-white hover:opacity-90 transition-opacity"
+                        >
+                          WhatsApp
+                        </a>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <a
-                        href={`/p/${e.shareToken}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-cp-tuerkis hover:underline"
-                      >
-                        PDF öffnen
-                      </a>
-                      <a
-                        href={waUrl(
-                          customer.telefon,
-                          `Ihr Angebot von Cryopoint Augsburg: ${SITE_URL}/p/${e.shareToken}`
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs px-1.5 py-0.5 rounded bg-[#25d366] text-white hover:opacity-90 transition-opacity"
-                      >
-                        WhatsApp
-                      </a>
+
+                    <div>
+                      {e.zugesagtAm ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
+                          ● Zugesagt am {fmtDatum(e.zugesagtAm)}
+                        </span>
+                      ) : e.geoeffnetAm ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700">
+                          ● Geöffnet am {fmtDatum(e.geoeffnetAm)}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                          ○ Noch nicht geöffnet
+                        </span>
+                      )}
                     </div>
+
+                    <Verkaufsleitfaden
+                      typ={e.typ}
+                      kundenVorname={customer.vorname}
+                      fokusLabel={fokusLabel}
+                      mitgliedschaftId={e.mitgliedschaft}
+                      gueltigBis={e.gueltigBis}
+                      anwendungen={anwendungen}
+                    />
                   </div>
                 );
               })}
@@ -354,6 +406,12 @@ export default async function KundeDetail({ params, searchParams }: Props) {
       )}
     </div>
   );
+}
+
+function fmtDatum(d: Date | string): string {
+  return new Date(d).toLocaleDateString('de-DE', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+  });
 }
 
 function Row({ label, value }: { label: string; value: string }) {
