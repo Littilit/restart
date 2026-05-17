@@ -24,6 +24,7 @@ export async function GET(_req: Request, { params }: Params) {
     einleitung: angebot.einleitung,
     zusatzhinweis: angebot.zusatzhinweis,
     mitgliedschaft: angebot.mitgliedschaft,
+    sessionsProMonat: angebot.sessionsProMonat,
     gueltigBis: angebot.gueltigBis,
   }) as unknown as React.ReactElement<{ children?: React.ReactNode }>;
 

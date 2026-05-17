@@ -3,12 +3,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { computeEmpfehlungen } from '@/features/anamnese/empfehlung';
 import type { MainFocus } from '@/features/anamnese/types';
-import { ANWENDUNGEN, getAnwendung, type AnwendungSlug } from '@/data/anwendungen';
+import { ANWENDUNGEN, type AnwendungSlug } from '@/data/anwendungen';
 import { RESEARCH } from '@/data/research';
-import {
-  protokollSessionsProMonat,
-  empfehleMitgliedschaftId,
-} from '@/features/angebot/mitgliedschaft-logik';
 import EmpfehlungEditor from './EmpfehlungEditor';
 
 const VALID_SLUGS = new Set<string>(ANWENDUNGEN.map((a) => a.slug));
@@ -43,7 +39,6 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
   const vorschlag = computeEmpfehlungen(mainFocus, chamber2, mainFocus2, chamber2b);
 
   let initial: { slug: AnwendungSlug; haeufigkeitText: string; begruendung: string }[];
-
   let initialErkrankungen: string[] = [];
   let initialMitgliedschaft = '';
 
@@ -89,16 +84,6 @@ export default async function NeueEmpfehlung({ params, searchParams }: Props) {
   const initialEinleitung = mainFocus
     ? `${customer.vorname} ${customer.nachname} hat im Fokus: ${mainFocus}${mainFocus2 ? ` und ${mainFocus2}` : ''}. Die folgende Empfehlung basiert auf den Anamnese-Daten und der wissenschaftlichen Studienlage zu den ausgewählten Anwendungen.`
     : '';
-
-  // Tarif-Vorauswahl aus dem empfohlenen Protokoll ableiten (nur Folgeangebot,
-  // wenn nicht bereits aus der letzten Empfehlung übernommen).
-  if (typ === 'folge' && !initialMitgliedschaft) {
-    const coreInitial = initial.filter((e) => {
-      try { return getAnwendung(e.slug).kategorie === 'longevity'; } catch { return false; }
-    });
-    const sessions = protokollSessionsProMonat(coreInitial);
-    if (sessions > 0) initialMitgliedschaft = empfehleMitgliedschaftId(sessions);
-  }
 
   // Gültig-bis-Default: Neukunde +28 Tage, Folge +14 Tage.
   const gueltigDatum = new Date();

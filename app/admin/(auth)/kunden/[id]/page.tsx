@@ -14,7 +14,6 @@ import { KONTRAINDIKATION_LABEL } from '@/data/kontraindikationen';
 import { DETAIL_FRAGEN } from '@/features/anamnese/fragen';
 import { KATEGORIEN } from '@/features/anamnese/kategorien';
 import { Verkaufsleitfaden } from '@/features/angebot/Verkaufsleitfaden';
-import type { AnwendungSlug } from '@/data/anwendungen';
 import type { Kontraindikation, MainFocus } from '@/features/anamnese/types';
 import type { Frage } from '@/features/anamnese/fragen';
 
@@ -291,18 +290,6 @@ export default async function KundeDetail({ params, searchParams }: Props) {
             <div className="space-y-3">
               {customer.empfehlungen.map((e) => {
                 const anwendungenRaw = Array.isArray(e.anwendungen) ? e.anwendungen : [];
-                const anwendungen = anwendungenRaw
-                  .filter(
-                    (a): a is { slug: string; haeufigkeitText: string } =>
-                      typeof a === 'object' &&
-                      a !== null &&
-                      typeof (a as Record<string, unknown>).slug === 'string' &&
-                      typeof (a as Record<string, unknown>).haeufigkeitText === 'string',
-                  )
-                  .map((a) => ({
-                    slug: a.slug as AnwendungSlug,
-                    haeufigkeitText: a.haeufigkeitText,
-                  }));
                 return (
                   <div
                     key={e.id}
@@ -381,8 +368,8 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                       kundenVorname={customer.vorname}
                       fokusLabel={fokusLabel}
                       mitgliedschaftId={e.mitgliedschaft}
+                      sessionsProMonat={e.sessionsProMonat}
                       gueltigBis={e.gueltigBis}
-                      anwendungen={anwendungen}
                     />
                   </div>
                 );

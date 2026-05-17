@@ -1,7 +1,5 @@
-import { getAnwendung, type AnwendungSlug } from '@/data/anwendungen';
 import { NEUKUNDEN_ANGEBOT } from '@/data/preise';
 import {
-  protokollSessionsProMonat,
   berechnePreisvergleich,
   getMitgliedschaft,
   formatEuro,
@@ -12,8 +10,8 @@ interface Props {
   kundenVorname: string;
   fokusLabel?: string | null;
   mitgliedschaftId?: string | null;
+  sessionsProMonat?: number | null;
   gueltigBis?: Date | string | null;
-  anwendungen: { slug: AnwendungSlug; haeufigkeitText: string }[];
 }
 
 function Block({ titel, children }: { titel: string; children: React.ReactNode }) {
@@ -30,15 +28,12 @@ export function Verkaufsleitfaden({
   kundenVorname,
   fokusLabel,
   mitgliedschaftId,
+  sessionsProMonat,
   gueltigBis,
-  anwendungen,
 }: Props) {
-  const core = anwendungen.filter((a) => {
-    try { return getAnwendung(a.slug).kategorie === 'longevity'; } catch { return false; }
-  });
-  const sessions = protokollSessionsProMonat(core);
   const m = getMitgliedschaft(mitgliedschaftId);
-  const vergleich = typ === 'folge' && m ? berechnePreisvergleich(sessions, m) : null;
+  const spm = sessionsProMonat ?? 0;
+  const vergleich = typ === 'folge' && m && spm > 0 ? berechnePreisvergleich(spm, m) : null;
   const gueltigText = gueltigBis
     ? new Date(gueltigBis).toLocaleDateString('de-DE', {
         day: '2-digit', month: '2-digit', year: 'numeric',
@@ -56,13 +51,13 @@ export function Verkaufsleitfaden({
         <Block titel="Gesprächseinstieg">
           „{kundenVorname}, ich hab mir das nochmal in Ruhe angeschaut. Du hast ja gesagt, dass dir{' '}
           {fokus} wichtig ist – genau darauf ist diese Empfehlung zugeschnitten. Lass uns kurz
-          durchgehen, was für dich am meisten Sinn ergibt.“
+          durchgehen, was für dich am meisten Sinn ergibt."
         </Block>
 
         <Block titel="Kernargument">
           {typ === 'folge' && vergleich && vergleich.ersparnisProMonat > 0 ? (
             <>
-              Dein Protokoll heißt rund <strong>{vergleich.sessions} Sessions/Monat</strong>.
+              Dein Plan heißt rund <strong>{spm} Sessions/Monat</strong>.
               Einzeln wären das <strong>{formatEuro(vergleich.einzelProMonat)}/Monat</strong> –
               mit dem {m?.name} nur <strong>{formatEuro(vergleich.mitgliedschaftProMonat)}/Monat</strong>.
               Der Kunde gibt also nicht mehr aus, sondern <strong>{formatEuro(vergleich.ersparnisProMonat)}
@@ -81,35 +76,35 @@ export function Verkaufsleitfaden({
 
         <Block titel="Abschlussfrage (direkt stellen)">
           {typ === 'folge' && m
-            ? `„Sollen wir dich gleich für den ${m.name} eintragen?“`
-            : `„Sollen wir dir das Neukunden-Special direkt mitgeben, damit du diese Woche starten kannst?“`}
+            ? `„Sollen wir dich gleich für den ${m.name} eintragen?"`
+            : `„Sollen wir dir das Neukunden-Special direkt mitgeben, damit du diese Woche starten kannst?"`}
         </Block>
 
         <Block titel="Wenn Einwände kommen">
           <ul className="space-y-2">
             <li>
-              <strong>„Zu teuer.“</strong>{' '}
+              <strong>„Zu teuer."</strong>{' '}
               {vergleich && vergleich.ersparnisProMonat > 0
-                ? `„Verständlich – schau es dir gerechnet an: einzeln ${formatEuro(vergleich.einzelProMonat)}, mit Mitgliedschaft ${formatEuro(vergleich.mitgliedschaftProMonat)}. Du sparst, du zahlst nicht drauf.“`
-                : '„Rechne es auf die einzelne Session runter – in der Mitgliedschaft bist du pro Anwendung immer günstiger als bei jeder Einzelbuchung.“'}
+                ? `„Verständlich – schau es dir gerechnet an: einzeln ${formatEuro(vergleich.einzelProMonat)}, mit Mitgliedschaft ${formatEuro(vergleich.mitgliedschaftProMonat)}. Du sparst, du zahlst nicht drauf."`
+                : '„Rechne es auf die einzelne Session runter – in der Mitgliedschaft bist du pro Anwendung immer günstiger als bei jeder Einzelbuchung."'}
             </li>
             <li>
-              <strong>„Ich muss noch überlegen.“</strong>{' '}
+              <strong>„Ich muss noch überlegen."</strong>{' '}
               {gueltigText
-                ? `„Klar. Damit du nichts verpasst: Das Angebot gilt bis ${gueltigText}. Die Empfehlung ist exakt auf deine Anamnese berechnet – länger warten heißt nur, länger aufs Ergebnis warten.“`
-                : '„Klar. Die Empfehlung ist exakt auf deine Anamnese berechnet – länger warten heißt nur, länger aufs Ergebnis warten. Womit genau bist du noch unsicher?“'}
+                ? `„Klar. Damit du nichts verpasst: Das Angebot gilt bis ${gueltigText}. Die Empfehlung ist exakt auf deine Anamnese berechnet – länger warten heißt nur, länger aufs Ergebnis warten."`
+                : '„Klar. Die Empfehlung ist exakt auf deine Anamnese berechnet – länger warten heißt nur, länger aufs Ergebnis warten. Womit genau bist du noch unsicher?"'}
             </li>
             <li>
-              <strong>„Keine Zeit.“</strong>{' '}
+              <strong>„Keine Zeit."</strong>{' '}
               „Genau dafür ist das Protokoll gemacht – eine Session dauert nur wenige Minuten.
-              Das bekommst du auch in einer vollen Woche unter. Lieber kurz und regelmäßig als gar nicht.“
+              Das bekommst du auch in einer vollen Woche unter. Lieber kurz und regelmäßig als gar nicht."
             </li>
           </ul>
         </Block>
 
         <Block titel="Beim WhatsApp-Versand">
           Schreib in die Nachricht dazu: <strong>„Antworte mir einfach mit JA, wenn du dabei
-          bist – den Rest machen wir vor Ort.“</strong> So bekommst du auch ohne Klick auf der
+          bist – den Rest machen wir vor Ort."</strong> So bekommst du auch ohne Klick auf der
           Seite ein klares Signal.
         </Block>
       </div>

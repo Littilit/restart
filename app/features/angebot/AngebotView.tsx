@@ -1,11 +1,10 @@
-import { CalendarDays, FlaskConical, Star } from 'lucide-react';
+import { FlaskConical, Star } from 'lucide-react';
 import { getAnwendung } from '@/data/anwendungen';
 import { RESEARCH } from '@/data/research';
 import { NEUKUNDEN_ANGEBOT } from '@/data/preise';
 import { SOCIAL_PROOF } from '@/data/socialproof';
 import { KATEGORIE_LABEL } from './kategorie-label';
 import {
-  protokollSessionsProMonat,
   berechnePreisvergleich,
   besteLaufzeit,
   formatEuro,
@@ -39,16 +38,16 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
     try { return getAnwendung(a.slug).kategorie === 'bodyforming'; } catch { return false; }
   });
 
-  const sessionsProMonat = protokollSessionsProMonat(coreAnwendungen);
+  const spm = angebot.sessionsProMonat;
   const m = angebot.mitgliedschaft;
-  const vergleich =
-    angebot.typ === 'folge' && m ? berechnePreisvergleich(sessionsProMonat, m) : null;
+  const vergleich = angebot.typ === 'folge' && m && spm ? berechnePreisvergleich(spm, m) : null;
   const beste = m ? besteLaufzeit(m) : null;
   const zeigeSocialProof = !SOCIAL_PROOF.platzhalter;
 
   return (
     <main className="min-h-screen bg-cp-grauweis pb-16">
-      <div className="mx-auto max-w-xl px-4 py-6 space-y-5">
+      <div className="mx-auto max-w-xl px-4 py-6 space-y-6">
+
         {/* Header */}
         <header className="flex items-end justify-between border-b-2 border-cp-blau pb-3">
           <div>
@@ -71,20 +70,20 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
         )}
 
         {/* Vision */}
-        <section className="rounded-2xl border-l-4 border-cp-blau bg-[#eef4ff] p-4">
-          <p className="text-sm italic leading-relaxed text-gray-700">„{VISION_TEXT}“</p>
-          <p className="mt-2 text-xs font-bold text-cp-blau">— Tim Lischke, Inhaber</p>
+        <section className="rounded-xl border-l-4 border-cp-blau bg-[#eef4ff] px-4 py-3">
+          <p className="text-xs italic leading-relaxed text-gray-600">„{VISION_TEXT}"</p>
+          <p className="mt-1.5 text-xs font-bold text-cp-blau">— Tim Lischke, Inhaber</p>
         </section>
 
         {/* Individuelle Analyse */}
-        <section className="space-y-2">
-          <h1 className="text-lg font-bold text-cp-blau">
-            {vorname}, das ist deine individuelle Strategie
-          </h1>
-          {angebot.einleitung && (
+        {angebot.einleitung && (
+          <section>
+            <h1 className="text-base font-bold text-cp-blau mb-1">
+              {vorname}, das ist deine individuelle Strategie
+            </h1>
             <p className="text-sm leading-relaxed text-gray-700">{angebot.einleitung}</p>
-          )}
-        </section>
+          </section>
+        )}
 
         {/* Protokoll */}
         {coreAnwendungen.length > 0 && (
@@ -92,47 +91,30 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
             <h2 className="text-xs font-semibold uppercase tracking-widest text-cp-braun/70">
               Dein Protokoll
             </h2>
-            {coreAnwendungen.map((a, idx) => {
+            {coreAnwendungen.map((a) => {
               const anwendung = getAnwendung(a.slug);
               const research = RESEARCH[a.slug];
               return (
                 <div
                   key={a.slug}
-                  className="overflow-hidden rounded-2xl border border-cp-blau/10 bg-white"
+                  className="rounded-xl border border-cp-blau/10 bg-white px-4 py-4 space-y-2"
                 >
-                  <div className="flex items-center gap-3 px-4 pt-4">
-                    <span className="text-2xl leading-none" aria-hidden>
-                      {anwendung.emoji}
-                    </span>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-cp-tuerkis">
-                        Empfehlung {idx + 1}
-                      </p>
-                      <p className="font-bold leading-tight text-cp-blau">{anwendung.name}</p>
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl leading-none" aria-hidden>{anwendung.emoji}</span>
+                    <p className="font-bold text-cp-blau">{anwendung.name}</p>
                   </div>
-                  <p className="px-4 pt-2 text-sm leading-relaxed text-gray-700">
+                  <p className="text-sm leading-relaxed text-gray-700">
                     {research?.nutzen ?? anwendung.teaser}
                   </p>
                   {a.begruendung && (
-                    <p className="px-4 pt-2 text-sm italic leading-relaxed text-cp-braun">
-                      {a.begruendung}
-                    </p>
+                    <p className="text-sm italic leading-relaxed text-cp-braun">{a.begruendung}</p>
                   )}
                   {research?.shortClaim && (
-                    <div className="mx-4 mt-3 flex gap-2 rounded-xl bg-cp-blau/5 px-3 py-2.5">
-                      <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-cp-tuerkis" />
-                      <p className="text-xs leading-relaxed text-gray-500">
-                        {research.shortClaim}
-                      </p>
+                    <div className="flex gap-2 pt-0.5">
+                      <FlaskConical className="mt-0.5 h-3 w-3 shrink-0 text-cp-tuerkis" />
+                      <p className="text-xs leading-relaxed text-gray-400">{research.shortClaim}</p>
                     </div>
                   )}
-                  <div className="flex items-center gap-1.5 px-4 pb-4 pt-3">
-                    <CalendarDays className="h-3.5 w-3.5 text-gray-400" />
-                    <span className="text-xs font-medium text-gray-500">
-                      {a.haeufigkeitText || research?.sessions}
-                    </span>
-                  </div>
                 </div>
               );
             })}
@@ -140,20 +122,20 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
         )}
 
         {/* Brücke Protokoll → Mitgliedschaft */}
-        {angebot.typ === 'folge' && m && sessionsProMonat > 0 && (
-          <section className="rounded-2xl bg-[#eef4ff] p-4">
+        {angebot.typ === 'folge' && m && spm && spm > 0 && (
+          <section className="rounded-xl bg-[#eef4ff] px-4 py-3">
             <p className="text-sm leading-relaxed text-cp-blau">
-              Dein Protokoll entspricht rund{' '}
-              <span className="font-bold">{sessionsProMonat} Sessions pro Monat</span>. Genau
-              dafür ist der <span className="font-bold">{m.name}</span> gemacht – damit du dein
-              Protokoll ohne Rechnerei durchziehen kannst.
+              Dein Plan umfasst rund{' '}
+              <span className="font-bold">{spm} Sessions pro Monat</span>. Genau dafür ist der{' '}
+              <span className="font-bold">{m.name}</span> gemacht – damit du deinen Plan ohne
+              Rechnerei durchziehen kannst.
             </p>
           </section>
         )}
 
         {/* Angebot / CTA-Block */}
         {angebot.typ === 'neukunde' ? (
-          <section className="rounded-2xl bg-cp-blau p-6 text-center text-white">
+          <section className="rounded-xl bg-cp-blau p-6 text-center text-white">
             <p className="text-sm font-semibold text-cp-tuerkis">Dein Start</p>
             <p className="mt-1 text-base font-bold">Das Neukunden-Special</p>
             <p className="mt-3 text-3xl font-extrabold">
@@ -166,8 +148,8 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
             </p>
           </section>
         ) : m ? (
-          <section className="rounded-2xl bg-cp-blau p-6 text-white">
-            <p className="text-center text-sm leading-snug font-semibold text-white/80">
+          <section className="rounded-xl bg-cp-blau p-5 text-white">
+            <p className="text-center text-sm font-semibold text-white/80">
               Deine Mitgliedschaft – die wirtschaftlich sinnvollste Langfristlösung
             </p>
             <div className="mt-3 text-center">
@@ -184,21 +166,17 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
                   <div
                     key={lz.monate}
                     className={`rounded-xl px-2 py-3 text-center ${
-                      istBest
-                        ? 'bg-white/15 ring-1 ring-cp-tuerkis'
-                        : 'bg-white/5'
+                      istBest ? 'bg-white/15 ring-1 ring-cp-tuerkis' : 'bg-white/5'
                     }`}
                   >
                     <p className="text-[10px] text-white/60">
                       {lz.monate} {lz.monate === 1 ? 'Monat' : 'Monate'}
                     </p>
-                    <p className="mt-0.5 text-sm font-bold">
-                      {formatEuro(lz.monatsbeitrag)}
-                    </p>
+                    <p className="mt-0.5 text-sm font-bold">{formatEuro(lz.monatsbeitrag)}</p>
                     <p className="text-[9px] text-white/50">/ Monat</p>
                     {istBest && (
-                      <p className="mt-1 text-[9px] font-bold uppercase text-cp-tuerkis">
-                        Bester Preis
+                      <p className="mt-1 text-[9px] font-bold uppercase leading-tight text-cp-tuerkis">
+                        Bestes Preis-Leistungs-Verhältnis
                       </p>
                     )}
                   </div>
@@ -211,11 +189,11 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
               </p>
             )}
             <p className="mt-1 text-center text-xs text-white/60">
-              monatlich, keine Mindestlaufzeit außer der gewählten Laufzeit
+              monatlich kündbar nach der gewählten Laufzeit
             </p>
           </section>
         ) : (
-          <section className="rounded-2xl bg-cp-blau p-6 text-center text-white">
+          <section className="rounded-xl bg-cp-blau p-5 text-center text-white">
             <p className="text-base font-bold">Deine Mitgliedschaft</p>
             <p className="mt-2 text-sm leading-relaxed text-white/80">
               Als regelmäßiger Nutzer holst du mit einer Mitgliedschaft das Maximum aus deiner
@@ -226,7 +204,7 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
 
         {/* Preisvergleich */}
         {vergleich && (
-          <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
             <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
               Was sich für dich rechnet
             </p>
@@ -259,7 +237,7 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
 
         {/* Bodyforming-Upsell */}
         {upsellAnwendungen.length > 0 && (
-          <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-4">
+          <section className="rounded-xl border border-dashed border-gray-300 bg-white p-4">
             <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
               Zusatz-Fokus: Bodyforming &amp; Funktion
             </p>
@@ -271,7 +249,6 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
                   <div key={a.slug}>
                     <p className="text-sm font-semibold text-cp-blau">
                       {anwendung.emoji} {anwendung.name}
-                      {a.haeufigkeitText ? ` · ${a.haeufigkeitText}` : ''}
                     </p>
                     <p className="text-sm leading-relaxed text-gray-600">
                       {a.begruendung || research?.nutzen || anwendung.teaser}
@@ -285,7 +262,7 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
 
         {/* Social Proof */}
         {zeigeSocialProof && (
-          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <section className="rounded-xl border border-amber-200 bg-amber-50 p-4">
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
               <p className="text-sm font-bold text-amber-900">
@@ -300,7 +277,7 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
             <div className="mt-3 space-y-3">
               {SOCIAL_PROOF.testimonials.map((t, i) => (
                 <div key={i} className="border-t border-amber-200 pt-3 first:border-0 first:pt-0">
-                  <p className="text-sm italic leading-relaxed text-gray-700">„{t.text}“</p>
+                  <p className="text-sm italic leading-relaxed text-gray-700">„{t.text}"</p>
                   <p className="mt-1 text-xs font-semibold text-gray-500">
                     — {t.name}, {t.kontext}
                   </p>
@@ -320,7 +297,7 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
 
         {/* Preisübersicht */}
         {Object.keys(angebot.preisSnapshot).length > 0 && (
-          <details className="rounded-2xl border border-gray-200 bg-white p-4">
+          <details className="rounded-xl border border-gray-200 bg-white p-4">
             <summary className="cursor-pointer text-sm font-semibold text-cp-blau">
               Vollständige Preisübersicht
             </summary>
@@ -350,7 +327,7 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
 
         {/* Hinweise */}
         {angebot.zusatzhinweis && (
-          <section className="rounded-2xl bg-cp-creme/60 p-4">
+          <section className="rounded-xl bg-cp-creme/60 p-4">
             <p className="text-xs font-bold uppercase tracking-wide text-cp-braun">Hinweise</p>
             <p className="mt-1 text-sm leading-relaxed text-gray-700">{angebot.zusatzhinweis}</p>
           </section>
@@ -366,9 +343,7 @@ export function AngebotView({ angebot, token }: { angebot: AngebotDaten; token: 
           >
             Angebot als PDF herunterladen
           </a>
-          <p className="text-xs text-gray-400">
-            Cryopoint Augsburg · Tel. {STUDIO_TELEFON}
-          </p>
+          <p className="text-xs text-gray-400">Cryopoint Augsburg · Tel. {STUDIO_TELEFON}</p>
           <p className="text-[11px] leading-relaxed text-gray-400">
             Rechtlicher Hinweis: Unsere Anwendungen dienen der allgemeinen
             Gesundheitsförderung und Regeneration. Sie ersetzen keine ärztliche Behandlung

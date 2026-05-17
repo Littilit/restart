@@ -5,7 +5,6 @@ import { SLUG_KATEGORIE, NEUKUNDEN_ANGEBOT, type Mitgliedschaft } from '@/data/p
 import { RESEARCH, type Studie } from '@/data/research';
 import { SOCIAL_PROOF } from '@/data/socialproof';
 import {
-  protokollSessionsProMonat,
   berechnePreisvergleich,
   besteLaufzeit,
   formatEuro,
@@ -503,6 +502,7 @@ export interface AngebotPdfProps {
   zusatzhinweis?: string | null;
   einleitung?: string | null;
   mitgliedschaft?: Mitgliedschaft | null;
+  sessionsProMonat?: number | null;
   gueltigBis?: Date | null;
 }
 
@@ -515,6 +515,7 @@ export function AngebotPdf({
   zusatzhinweis,
   einleitung,
   mitgliedschaft,
+  sessionsProMonat,
   gueltigBis,
 }: AngebotPdfProps) {
   const coreAnwendungen = anwendungen.filter((a) => {
@@ -524,10 +525,10 @@ export function AngebotPdf({
     try { return getAnwendung(a.slug).kategorie === 'bodyforming'; } catch { return false; }
   });
 
-  const sessionsProMonat = protokollSessionsProMonat(coreAnwendungen);
+  const spm = sessionsProMonat ?? 0;
   const vergleich =
-    typ === 'folge' && mitgliedschaft
-      ? berechnePreisvergleich(sessionsProMonat, mitgliedschaft)
+    typ === 'folge' && mitgliedschaft && spm > 0
+      ? berechnePreisvergleich(spm, mitgliedschaft)
       : null;
   const beste = mitgliedschaft ? besteLaufzeit(mitgliedschaft) : null;
 
@@ -570,11 +571,6 @@ export function AngebotPdf({
             <Text style={s.tableCellBegr}>{a.begruendung}</Text>
           ) : null}
         </View>
-        <View style={[s.tableCell, s.colFrequenz]}>
-          <Text style={s.tableCellFreq}>
-            {a.haeufigkeitText || research?.sessions || '–'}
-          </Text>
-        </View>
       </View>
     );
   }
@@ -585,9 +581,7 @@ export function AngebotPdf({
     const research = RESEARCH[a.slug];
     return (
       <View key={a.slug} style={s.upsellItem}>
-        <Text style={s.upsellName}>
-          {anwName}{a.haeufigkeitText ? ` · ${a.haeufigkeitText}` : ''}
-        </Text>
+        <Text style={s.upsellName}>{anwName}</Text>
         <Text style={s.upsellText}>
           {a.begruendung || research?.nutzen || '–'}
         </Text>
@@ -638,20 +632,17 @@ export function AngebotPdf({
               <View style={[s.tableHeaderCell, s.colNutzen]}>
                 <Text>Dein Nutzen</Text>
               </View>
-              <View style={[s.tableHeaderCell, s.colFrequenz]}>
-                <Text>Frequenz</Text>
-              </View>
             </View>
             {coreAnwendungen.map((a, i) => renderTableRow(a, i))}
           </View>
         )}
 
         {/* Protokoll → Mitgliedschaft-Brücke */}
-        {typ === 'folge' && mitgliedschaft && sessionsProMonat > 0 && (
+        {typ === 'folge' && mitgliedschaft && spm > 0 && (
           <View style={s.bridgeBox}>
             <Text style={s.bridgeText}>
-              Dein Protokoll entspricht rund{' '}
-              <Text style={s.bridgeBold}>{sessionsProMonat} Sessions pro Monat</Text>.
+              Dein Plan umfasst rund{' '}
+              <Text style={s.bridgeBold}>{spm} Sessions pro Monat</Text>.
               {' '}Genau dafür ist der{' '}
               <Text style={s.bridgeBold}>{mitgliedschaft.name}</Text> gemacht.
             </Text>
@@ -698,7 +689,7 @@ export function AngebotPdf({
                     >
                       <Text style={s.ctaLaufzeitMonate}>{lz.monate} {lz.monate === 1 ? 'Monat' : 'Monate'}</Text>
                       <Text style={s.ctaLaufzeitPreis}>{lz.monatsbeitrag.toFixed(2).replace('.', ',')} €</Text>
-                      {istBest ? <Text style={s.ctaLaufzeitBest}>BESTER PREIS</Text> : null}
+                      {istBest ? <Text style={s.ctaLaufzeitBest}>BESTES PREIS-LEISTUNGS-VERHÄLTNIS</Text> : null}
                     </View>
                   );
                 })}

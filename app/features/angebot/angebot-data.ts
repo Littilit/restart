@@ -25,6 +25,7 @@ export interface AngebotDaten {
   einleitung: string | null;
   zusatzhinweis: string | null;
   mitgliedschaft: Mitgliedschaft | null;
+  sessionsProMonat: number | null;
   erstelltAm: Date;
   gueltigBis: Date | null;
   geoeffnetAm: Date | null;
@@ -73,6 +74,7 @@ export async function ladeAngebot(token: string): Promise<AngebotDaten | null> {
     einleitung: empfehlung.einleitung,
     zusatzhinweis: empfehlung.zusatzhinweis,
     mitgliedschaft: getMitgliedschaft(empfehlung.mitgliedschaft),
+    sessionsProMonat: empfehlung.sessionsProMonat,
     erstelltAm: empfehlung.createdAt,
     gueltigBis: empfehlung.gueltigBis,
     geoeffnetAm: empfehlung.geoeffnetAm,
