@@ -4,6 +4,8 @@ import type { CustomerStatus } from '@prisma/client';
 import StatusBadge, { STATUS_CONFIG } from '../StatusBadge';
 import ServicegesprachAlarmSektion from '../ServicegesprachAlarmSektion';
 import AufgabenSektion from '../AufgabenSektion';
+import NeueLeadsSektion from '../NeueLeadsSektion';
+import LeadAutoSync from '../LeadAutoSync';
 
 const STATUS_ORDER: CustomerStatus[] = [
   'neukunde',
@@ -42,6 +44,15 @@ export default async function AdminDashboard({ searchParams }: Props) {
     },
     include: {
       customer: { select: { id: true, vorname: true, nachname: true, telefon: true } },
+    },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  const neueLeads = await prisma.lead.findMany({
+    where: { status: 'neu' },
+    include: {
+      customer: { select: { id: true } },
+      leadList: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: 'asc' },
   });
@@ -88,6 +99,8 @@ export default async function AdminDashboard({ searchParams }: Props) {
 
   return (
     <div>
+      <LeadAutoSync />
+      <NeueLeadsSektion leads={neueLeads} />
       <AufgabenSektion tasks={offeneAufgaben} />
       <ServicegesprachAlarmSektion kunden={alarmKunden.filter((k) => k.erstTermin !== null) as import('../ServicegesprachAlarmSektion').AlarmKunde[]} />
 

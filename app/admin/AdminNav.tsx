@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { Users, Tag, UserPlus, ClipboardList, LogIn } from 'lucide-react';
+import { Users, Tag, UserPlus, ClipboardList, LogIn, Inbox } from 'lucide-react';
 
 export default function AdminNav({ tags }: { tags: string[] }) {
   const pathname = usePathname();
@@ -15,6 +15,7 @@ export default function AdminNav({ tags }: { tags: string[] }) {
   const kundeNeuActive = pathname.startsWith('/admin/kunden/neu');
   const aufgabeActive = pathname.startsWith('/admin/aufgaben');
   const checkInActive = pathname.startsWith('/admin/check-in');
+  const leadsActive = pathname.startsWith('/admin/leads');
 
   async function logout() {
     await fetch('/api/admin/logout', { method: 'POST' });
@@ -53,6 +54,19 @@ export default function AdminNav({ tags }: { tags: string[] }) {
           >
             <LogIn size={16} />
             Check-in
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/admin/leads"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              leadsActive
+                ? 'bg-cp-tuerkis text-white'
+                : 'text-white/60 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Inbox size={16} />
+            Leads
           </Link>
         </li>
         <li>

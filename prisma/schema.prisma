@@ -63,6 +63,7 @@ model Customer {
   tasks             Task[]
   checkIns          CheckIn[]
   karten            Card[]
+  leads             Lead[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
@@ -157,6 +158,55 @@ model Card {
   checkIns   CheckIn[]
 
   @@index([customerId, anwendung])
+}
+
+model LeadList {
+  id             String    @id @default(cuid())
+  name           String
+  sheetUrl       String
+  sheetId        String
+  gid            String?
+  nameModus      String    @default("getrennt")
+  spalteName     String?
+  spalteVorname  String?
+  spalteNachname String?
+  spalteEmail    String?
+  spalteTelefon  String?
+  aktiv          Boolean   @default(true)
+  lastSyncedAt   DateTime?
+  syncFehler     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  leads          Lead[]
+}
+
+model Lead {
+  id                 String     @id @default(cuid())
+  leadListId         String
+  leadList           LeadList   @relation(fields: [leadListId], references: [id], onDelete: Cascade)
+  vorname            String     @default("")
+  nachname           String     @default("")
+  email              String     @default("")
+  telefon            String     @default("")
+  dedupeKey          String
+  status             LeadStatus @default(neu)
+  erreichtAm         DateTime?
+  terminVereinbartAm DateTime?
+  notiz              String?    @db.Text
+  customerId         String?
+  customer           Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt          DateTime   @default(now())
+
+  @@unique([leadListId, dedupeKey])
+  @@index([status])
+  @@index([customerId])
+}
+
+enum LeadStatus {
+  neu
+  erreicht
+  termin_vereinbart
+  kein_interesse
 }
 
 model User {
