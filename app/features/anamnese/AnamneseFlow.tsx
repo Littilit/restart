@@ -5,6 +5,7 @@ import { AnamneseShell } from './AnamneseShell';
 import { StepAnwendung } from './steps/StepAnwendung';
 import { StepKategorie } from './steps/StepKategorie';
 import { StepDetails } from './steps/StepDetails';
+import { StepZiel } from './steps/StepZiel';
 import { StepKontraindikationen } from './steps/StepKontraindikationen';
 import { StepDaten } from './steps/StepDaten';
 import { StepConsent } from './steps/StepConsent';
@@ -23,6 +24,10 @@ const STEP_META = {
   details: {
     title: 'Erzähl uns mehr',
     subtitle: 'Damit wir deinen Plan optimal auf dich abstimmen können.',
+  },
+  ziel: {
+    title: 'Dein persönliches Ziel',
+    subtitle: 'Diese Frage ist optional — du kannst sie auch überspringen.',
   },
   kontraindikationen: {
     title: 'Sicherheits-Check',
@@ -63,6 +68,7 @@ export function AnamneseFlow() {
       {currentStep === 'anwendung' && <StepAnwendung />}
       {currentStep === 'kategorie' && <StepKategorie />}
       {currentStep === 'details' && <StepDetails />}
+      {currentStep === 'ziel' && <StepZiel />}
       {currentStep === 'kontraindikationen' && <StepKontraindikationen />}
       {currentStep === 'daten' && <StepDaten />}
       {currentStep === 'consent' && <StepConsent />}
