@@ -59,7 +59,9 @@ AnamneseShell (Layout) → AnamneseFlow (Step-Switch) → Step-Komponenten
 ```
 
 Step-Reihenfolge via `STEP_ORDER` in `app/features/anamnese/types.ts`:
-`anwendung → kategorie → details → kontraindikationen → daten → consent → signatur → plan`
+`anwendung → kategorie → details → ziel → kontraindikationen → daten → consent → signatur → plan`
+
+`COUNTED_STEPS` filtert `plan` heraus (Fortschrittsanzeige: „Schritt X von 8"). `ziel` ist optional — der Weiter-Button ist immer aktiv.
 
 **Empfehlungslogik:** `app/features/anamnese/empfehlung.ts` — berechnet aus `mainFocus` + `chamber2`-Antworten (+ optionalem Zweit-Fokus). Wird bei jeder Antwort-Änderung neu berechnet.
 
@@ -117,7 +119,7 @@ LeadList  (1) ──< Lead      (onDelete: Cascade)
 
 ### Check-in-Feature
 
-`app/admin/(auth)/check-in/` — Suchseite mit Inline-Eincheck. `app/admin/KundenCheckIns.tsx` — Tab in Kundenmaske (Kontingent-Editor, Kartenverwaltung, Historie). FIFO-Kartenverbrauch: älteste aktive Karte zuerst.
+`app/admin/(auth)/check-in/` — Suchseite mit Inline-Eincheck. `app/admin/KundenCheckIns.tsx` — Tab in Kundenmaske (Kontingent-Editor, Kartenverwaltung, Historie). FIFO-Kartenverbrauch: älteste aktive Karte zuerst. Longevity-Karte (`LONGEVITY_CARD_SLUG`) hat Vorrang vor Monatskontingent.
 
 ### PDF-Generierung
 

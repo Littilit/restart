@@ -21,6 +21,7 @@ interface AnamneseStore {
   setKeineKontraindikationen: (value: boolean) => void;
   updateContact: (patch: Partial<Pick<AnamneseData, 'vorname' | 'nachname' | 'email' | 'telefon' | 'geburtsdatum' | 'adresse' | 'herkunft'>>) => void;
   setConsent: (patch: Partial<Pick<AnamneseData, 'consentDsgvo' | 'consentGesundheitsdaten' | 'consentMarketing'>>) => void;
+  setZiel: (text: string, audioDataUrl: string | null) => void;
   setSignature: (dataUrl: string | null) => void;
   goTo: (step: AnamneseStep) => void;
   next: () => void;
@@ -93,6 +94,9 @@ export const useAnamnese = create<AnamneseStore>()(
 
       setConsent: (patch) =>
         set((s) => ({ data: { ...s.data, ...patch } })),
+
+      setZiel: (text, audioDataUrl) =>
+        set((s) => ({ data: { ...s.data, zielText: text, zielAudioDataUrl: audioDataUrl } })),
 
       setSignature: (dataUrl) =>
         set((s) => ({ data: { ...s.data, signatureDataUrl: dataUrl } })),

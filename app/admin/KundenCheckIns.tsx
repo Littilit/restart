@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { LONGEVITY_ANWENDUNGEN, KARTEN_ANWENDUNGEN, getAnwendung } from '@/data/anwendungen';
+import { LONGEVITY_ANWENDUNGEN, KARTEN_ANWENDUNGEN, LONGEVITY_CARD_SLUG, getAnwendung } from '@/data/anwendungen';
 import type { AnwendungSlug } from '@/data/anwendungen';
 
 interface CheckIn {
@@ -35,7 +35,7 @@ export default function KundenCheckIns({ customerId, status, monatsKontingent, u
   const [kontingent, setKontingent] = useState(monatsKontingent);
   const [isUnbegrenzt, setIsUnbegrenzt] = useState(unbegrenzt);
   const [kontingentInput, setKontingentInput] = useState(String(monatsKontingent));
-  const [newKarteAnwendung, setNewKarteAnwendung] = useState<AnwendungSlug>(KARTEN_ANWENDUNGEN[0]);
+  const [newKarteAnwendung, setNewKarteAnwendung] = useState<string>(KARTEN_ANWENDUNGEN[0]);
   const [newKarteGroesse, setNewKarteGroesse] = useState(3);
   const [customGroesse, setCustomGroesse] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -219,6 +219,45 @@ export default function KundenCheckIns({ customerId, status, monatsKontingent, u
           <p className="text-sm text-gray-400 mb-4">Keine aktiven Karten vorhanden.</p>
         ) : (
           <div className="space-y-2 mb-4">
+            {/* Longevity-Karten */}
+            {aktivKarten.filter((k) => k.anwendung === LONGEVITY_CARD_SLUG).map((k) => (
+              <div key={k.id}>
+                <p className="text-xs font-medium text-gray-500 mb-1.5">❄️ Longevity-Karte</p>
+                <div className="bg-gray-50 rounded-lg px-3 py-2 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-cp-blau">
+                        {k.verbraucht}/{k.groesse} verbraucht
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        Gekauft {new Date(k.gekauftAm).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => karteLoeschen(k.id)}
+                      className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                    >
+                      Löschen
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {LONGEVITY_ANWENDUNGEN.map((slug) => {
+                      const a = getAnwendung(slug);
+                      return (
+                        <button
+                          key={slug}
+                          onClick={() => checkIn(slug)}
+                          className="text-xs px-2.5 py-1 rounded-lg bg-cp-tuerkis text-white hover:opacity-90 transition-opacity"
+                        >
+                          {a.emoji} {a.kurzName}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {/* Bodyforming-Karten */}
             {KARTEN_ANWENDUNGEN.map((slug) => {
               const slug_karten = aktivKarten.filter((k) => k.anwendung === slug);
               if (slug_karten.length === 0) return null;
@@ -266,9 +305,10 @@ export default function KundenCheckIns({ customerId, status, monatsKontingent, u
           <div className="flex flex-wrap items-center gap-2">
             <select
               value={newKarteAnwendung}
-              onChange={(e) => setNewKarteAnwendung(e.target.value as AnwendungSlug)}
+              onChange={(e) => setNewKarteAnwendung(e.target.value)}
               className="text-sm border border-gray-200 rounded-lg px-2 py-1.5"
             >
+              <option value={LONGEVITY_CARD_SLUG}>❄️ Longevity-Karte</option>
               {KARTEN_ANWENDUNGEN.map((slug) => {
                 const a = getAnwendung(slug);
                 return <option key={slug} value={slug}>{a.kurzName}</option>;
@@ -314,10 +354,12 @@ export default function KundenCheckIns({ customerId, status, monatsKontingent, u
             </summary>
             <div className="mt-2 space-y-1">
               {verbrauchtKarten.map((k) => {
-                const a = getAnwendung(k.anwendung as AnwendungSlug);
+                const label = k.anwendung === LONGEVITY_CARD_SLUG
+                  ? '❄️ Longevity-Karte'
+                  : (() => { const a = getAnwendung(k.anwendung as AnwendungSlug); return `${a.emoji} ${a.kurzName}`; })();
                 return (
                   <div key={k.id} className="flex items-center justify-between text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-1.5">
-                    <span>{a.emoji} {a.kurzName} — {k.groesse}er vollständig verbraucht</span>
+                    <span>{label} — {k.groesse}er vollständig verbraucht</span>
                     <span>{new Date(k.gekauftAm).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                   </div>
                 );

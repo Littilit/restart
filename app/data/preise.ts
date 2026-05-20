@@ -30,8 +30,8 @@ export const MITGLIEDSCHAFTEN: Mitgliedschaft[] = [
     zusatzSession: 9.90,
     laufzeiten: [
       { monate: 1, monatsbeitrag: 79.90 },
-      { monate: 6, monatsbeitrag: 69.90 },
-      { monate: 12, monatsbeitrag: 59.90 },
+      { monate: 6, monatsbeitrag: 59.90 },
+      { monate: 12, monatsbeitrag: 49.90 },
     ],
   },
   {

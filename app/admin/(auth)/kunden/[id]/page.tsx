@@ -232,6 +232,17 @@ export default async function KundeDetail({ params, searchParams }: Props) {
                     chamber={latestAnamnese.chamber2b as Record<string, string>}
                   />
                 )}
+                {(latestAnamnese.zielText as string | null) && (
+                  <Row label="Ziel (Text)" value={latestAnamnese.zielText as string} />
+                )}
+                {(latestAnamnese.zielAudioDataUrl as string | null) && (
+                  <div className="flex gap-2 text-sm">
+                    <dt className="w-44 shrink-0 text-gray-500">Ziel (Sprachnachricht)</dt>
+                    <dd>
+                      <audio controls src={latestAnamnese.zielAudioDataUrl as string} className="h-8" />
+                    </dd>
+                  </div>
+                )}
                 <div className="flex gap-2 text-sm">
                   <dt className="w-44 shrink-0 text-gray-500">Kontraindikationen</dt>
                   <dd>

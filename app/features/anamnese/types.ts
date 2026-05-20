@@ -44,6 +44,8 @@ export interface AnamneseData {
   consentGesundheitsdaten: boolean;
   consentMarketing: boolean;
   signatureDataUrl: string | null;
+  zielText: string;
+  zielAudioDataUrl: string | null;
   herkunft: string;
 }
 
@@ -51,6 +53,7 @@ export type AnamneseStep =
   | 'anwendung'
   | 'kategorie'
   | 'details'
+  | 'ziel'
   | 'kontraindikationen'
   | 'daten'
   | 'consent'
@@ -61,6 +64,7 @@ export const STEP_ORDER: AnamneseStep[] = [
   'anwendung',
   'kategorie',
   'details',
+  'ziel',
   'kontraindikationen',
   'daten',
   'consent',
@@ -90,5 +94,7 @@ export const INITIAL_DATA: AnamneseData = {
   consentGesundheitsdaten: false,
   consentMarketing: false,
   signatureDataUrl: null,
+  zielText: '',
+  zielAudioDataUrl: null,
   herkunft: '',
 };

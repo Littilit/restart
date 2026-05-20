@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { LONGEVITY_ANWENDUNGEN, KARTEN_ANWENDUNGEN } from '@/data/anwendungen';
+import { LONGEVITY_ANWENDUNGEN, KARTEN_ANWENDUNGEN, LONGEVITY_CARD_SLUG } from '@/data/anwendungen';
 import type { AnwendungSlug } from '@/data/anwendungen';
 
 const postSchema = z.object({
@@ -39,6 +39,20 @@ export async function POST(request: Request, { params }: Params) {
     if (!customer) return NextResponse.json({ error: 'Kunde nicht gefunden' }, { status: 404 });
 
     if (LONGEVITY_ANWENDUNGEN.includes(anwendung as AnwendungSlug)) {
+      const longevityCards = await prisma.card.findMany({
+        where: { customerId: id, anwendung: LONGEVITY_CARD_SLUG },
+        orderBy: { gekauftAm: 'asc' },
+      });
+      const longevityCard = longevityCards.find((c) => c.verbraucht < c.groesse);
+
+      if (longevityCard) {
+        const [checkIn] = await prisma.$transaction([
+          prisma.checkIn.create({ data: { customerId: id, anwendung, cardId: longevityCard.id } }),
+          prisma.card.update({ where: { id: longevityCard.id }, data: { verbraucht: { increment: 1 } } }),
+        ]);
+        return NextResponse.json(checkIn, { status: 201 });
+      }
+
       if (!customer.unbegrenzt && customer.monatsKontingent > 0) {
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
