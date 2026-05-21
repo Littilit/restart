@@ -45,7 +45,6 @@ export interface AnamneseData {
   consentMarketing: boolean;
   signatureDataUrl: string | null;
   zielText: string;
-  zielAudioDataUrl: string | null;
   herkunft: string;
 }
 
@@ -95,6 +94,5 @@ export const INITIAL_DATA: AnamneseData = {
   consentMarketing: false,
   signatureDataUrl: null,
   zielText: '',
-  zielAudioDataUrl: null,
   herkunft: '',
 };

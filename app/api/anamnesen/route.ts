@@ -25,7 +25,6 @@ const schema = z.object({
   consentMarketing: z.boolean().optional().default(false),
   signatureDataUrl: z.string().max(500_000).nullable().optional(),
   zielText: z.string().max(5_000).optional(),
-  zielAudioDataUrl: z.string().max(2_000_000).nullable().optional(),
   herkunft: z.string().optional().default(''),
   userAgent: z.string().optional().default(''),
 });
@@ -101,7 +100,6 @@ export async function POST(request: Request) {
         consentMarketing: d.consentMarketing,
         signatureDataUrl: d.signatureDataUrl ?? null,
         zielText: d.zielText ?? null,
-        zielAudioDataUrl: d.zielAudioDataUrl ?? null,
         herkunft: d.herkunft,
         userAgent: d.userAgent,
         customerId: customer.id,

@@ -30,7 +30,6 @@ model Anamnese {
   consentMarketing        Boolean   @default(false)
   signatureDataUrl        String?   @db.Text
   zielText                String?   @db.Text
-  zielAudioDataUrl        String?   @db.Text
   herkunft                String    @default("")
   userAgent               String    @default("")
   createdAt               DateTime  @default(now())
